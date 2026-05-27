@@ -1,6 +1,7 @@
 using Application.Notes;
 using Domain.Notes;
 using Domain.Notes.Events;
+using Domain.Shared;
 using Domain.Users;
 
 namespace UnitTests.Notes;
@@ -28,7 +29,7 @@ public class NoteUpdateTests
 
         // --- 2. 非擁有者更新，回傳 null ---
         var repo = new FakeNoteRepository(returnNote: null);
-        var handler = new UpdateNoteHandler(repo);
+        var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
         var wrongCommand = new UpdateNoteCommandRequest(note.Id, UserId.New(), "新標題", null, null);
 
         var notFoundResult = await handler.Handle(wrongCommand);
@@ -39,7 +40,7 @@ public class NoteUpdateTests
 
         // --- 3. 只更新標題 ---
         repo = new FakeNoteRepository(returnNote: note);
-        handler = new UpdateNoteHandler(repo);
+        handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
         var linksEventCountBefore = note.DomainEvents.OfType<NoteLinksChangedEvent>().Count();
         var titleCommand = new UpdateNoteCommandRequest(note.Id, userId, "新標題", null, null);
 
@@ -53,7 +54,7 @@ public class NoteUpdateTests
 
         // --- 4. 更新內容：移除圖片、移除連結 ---
         repo = new FakeNoteRepository(returnNote: note);
-        handler = new UpdateNoteHandler(repo);
+        handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
         var contentCommand = new UpdateNoteCommandRequest(note.Id, userId, null, "重寫內容，不含圖片與連結", null);
 
         var contentResult = await handler.Handle(contentCommand);
@@ -72,7 +73,7 @@ public class NoteUpdateTests
 
         // --- 5. 同時更新標題與內容 ---
         repo = new FakeNoteRepository(returnNote: note);
-        handler = new UpdateNoteHandler(repo);
+        handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
         var bothCommand = new UpdateNoteCommandRequest(note.Id, userId, "最終標題", "最終內容", null);
 
         var bothResult = await handler.Handle(bothCommand);
@@ -82,6 +83,15 @@ public class NoteUpdateTests
         Assert.Equal("最終內容", bothResult.Content);
         Console.WriteLine($"[5] 同時更新：標題={bothResult.Title}，內容={bothResult.Content}");
     }
+}
+
+file sealed class FakeUnitOfWork : IUnitOfWork
+{
+    public static readonly FakeUnitOfWork Instance = new();
+    public Task SaveChangesAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task BeginTransactionAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task CommitAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task RollbackAsync(CancellationToken ct = default) => Task.CompletedTask;
 }
 
 file class FakeNoteRepository(Note? returnNote) : INoteRepository

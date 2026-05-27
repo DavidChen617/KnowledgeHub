@@ -1,6 +1,7 @@
 using Application.Notes;
 using Domain.Notes;
 using Domain.Notes.Events;
+using Domain.Shared;
 using Domain.Users;
 
 namespace UnitTests.Notes;
@@ -45,7 +46,7 @@ public class NoteDeleteTests
 
         // --- 3. 使用者非擁有者，handler 回傳 null ---
         var wrongUserRepo = new FakeNoteRepository(returnNote: null);
-        var handler = new DeleteNoteHandler(wrongUserRepo);
+        var handler = new DeleteNoteHandler(wrongUserRepo, FakeUnitOfWork.Instance);
         var wrongUserCommand = new DeleteNoteCommandRequest(note.Id, UserId.New());
 
         var notFoundResult = await handler.Handle(wrongUserCommand);
@@ -56,7 +57,7 @@ public class NoteDeleteTests
 
         // --- 4. 擁有者刪除，觸發 NoteDeletedEvent ---
         var ownerRepo = new FakeNoteRepository(returnNote: note);
-        handler = new DeleteNoteHandler(ownerRepo);
+        handler = new DeleteNoteHandler(ownerRepo, FakeUnitOfWork.Instance);
         var deleteCommand = new DeleteNoteCommandRequest(note.Id, userId);
 
         var result = await handler.Handle(deleteCommand);
@@ -69,6 +70,15 @@ public class NoteDeleteTests
         Assert.Equal(note.Id, deletedEvent.NoteId);
         Console.WriteLine($"[4] 擁有者刪除成功，NoteDeletedEvent 觸發（NoteId: {deletedEvent.NoteId.Value}）");
     }
+}
+
+file sealed class FakeUnitOfWork : IUnitOfWork
+{
+    public static readonly FakeUnitOfWork Instance = new();
+    public Task SaveChangesAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task BeginTransactionAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task CommitAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task RollbackAsync(CancellationToken ct = default) => Task.CompletedTask;
 }
 
 file class FakeNoteRepository(Note? returnNote) : INoteRepository
