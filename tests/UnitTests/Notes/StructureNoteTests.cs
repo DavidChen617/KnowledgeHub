@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 namespace UnitTests.Notes;
 
 [Trait("Category", "Integration")]
-public class NoteLifecycleTests
+public class StructureNoteTests
 {
     private static readonly IConfiguration Config = new ConfigurationBuilder()
-        .AddUserSecrets<NoteLifecycleTests>()
+        .AddUserSecrets<StructureNoteTests>()
         .Build();
 
     private static HttpClient GroqClient()
