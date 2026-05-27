@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoreMesh.Dispatching" Version="1.1.2" />
+    <PackageReference Include="CoreMesh.Endpoints" Version="0.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.4.26230.115" />
   </ItemGroup>
 
