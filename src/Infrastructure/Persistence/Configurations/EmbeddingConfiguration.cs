@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Pgvector;
 using DAI = Domain.AI;
 
 namespace Infrastructure.Persistence.Configurations;
@@ -22,7 +23,8 @@ internal sealed class EmbeddingConfiguration : IEntityTypeConfiguration<DAI.Embe
             .HasComment("對應的 Chunk ID（1:1）");
 
         builder.Property(e => e.Vector)
-            .HasColumnType("real[]")
+            .HasConversion(v => new Vector(v), v => v.ToArray())
+            .HasColumnType("vector(1536)")
             .HasColumnName("vector")
             .IsRequired()
             .HasComment("Cohere embed-v3 輸出的 1536 維浮點向量");

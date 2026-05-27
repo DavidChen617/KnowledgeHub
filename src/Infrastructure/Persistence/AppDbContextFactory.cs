@@ -9,7 +9,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(
-                Environment.GetEnvironmentVariable("ConnectionStrings__Default"))
+                Environment.GetEnvironmentVariable("ConnectionStrings__Default"),
+                o => o.UseVector())
             .Options;
 
         return new AppDbContext(options);

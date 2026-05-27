@@ -30,7 +30,8 @@ public static class Dependency
 
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("Default"));
+                options.UseNpgsql(configuration.GetConnectionString("Default"),
+                    o => o.UseVector());
                 options.AddInterceptors(sp.GetRequiredService<DomainEventInterceptor>());
             });
 
