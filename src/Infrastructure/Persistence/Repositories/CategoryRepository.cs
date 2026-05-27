@@ -34,6 +34,8 @@ internal sealed class CategoryRepository(AppDbContext db) : ICategoryRepository
         return await db.Notes.AnyAsync(n => n.CategoryId == id, ct);
     }
 
+    public Task UpdateAsync(Category category, CancellationToken ct = default) => Task.CompletedTask;
+
     public Task DeleteAsync(Category category, CancellationToken ct = default)
     {
         db.Categories.Remove(category);

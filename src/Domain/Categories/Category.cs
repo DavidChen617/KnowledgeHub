@@ -16,4 +16,6 @@ public class Category : AggregateRoot<CategoryId>
 
     public static Category Create(UserId userId, string name) =>
         new(CategoryId.New(), userId, name);
+
+    public void Rename(string name) => Name = name;
 }
