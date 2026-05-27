@@ -18,6 +18,7 @@ public class DeleteNoteHandler(INoteRepository noteRepository)
         if (note is null)
             return null;
 
+        note.Delete();
         await noteRepository.DeleteAsync(note, cancellationToken);
 
         return new DeleteNoteCommandResponse();
