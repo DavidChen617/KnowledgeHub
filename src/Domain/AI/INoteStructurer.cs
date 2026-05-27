@@ -2,5 +2,5 @@ namespace Domain.AI;
 
 public interface INoteStructurer
 {
-    Task<string> StructureAsync(string content, string prompt, CancellationToken cancellationToken = default);
+    Task<NoteStructureResult> StructureAsync(string content, string userPrompt, CancellationToken cancellationToken = default);
 }

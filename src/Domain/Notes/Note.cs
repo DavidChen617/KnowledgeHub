@@ -13,6 +13,7 @@ public class Note : AggregateRoot<NoteId>
     public UserId UserId { get; }
     public string Title { get; private set; }
     public string Content { get; private set; }
+    public string? Category { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public SharedLink? SharedLink { get; private set; }
 
@@ -50,9 +51,15 @@ public class Note : AggregateRoot<NoteId>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public NoteStructure AddStructure(string prompt, string content, IReadOnlyList<(int Index, string Text)> chunks)
+    public void SetCategory(string category)
     {
-        var structure = NoteStructure.Create(Id, prompt, content, chunks);
+        Category = category;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public NoteStructure AddStructure(string prompt, string content, string description, IReadOnlyList<(int Index, string Text)> chunks)
+    {
+        var structure = NoteStructure.Create(Id, prompt, content, description, chunks);
         _structures.Add(structure);
         UpdatedAt = DateTime.UtcNow;
         return structure;
