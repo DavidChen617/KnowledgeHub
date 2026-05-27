@@ -2,7 +2,7 @@ using CoreMesh.Outbox.Abstractions;
 
 namespace Domain.Shared;
 
-public abstract class AggregateRoot<TId> : Entity<TId>
+public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
 {
     private readonly List<IEvent> _domainEvents = [];
 
