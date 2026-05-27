@@ -1,7 +1,11 @@
+using Domain.Users;
+
 namespace Domain.Notes;
 
 public interface INoteRepository
 {
     Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default);
+    Task<Note?> GetByIdAndUserIdAsync(NoteId id, UserId userId, CancellationToken ct = default);
     Task UpdateAsync(Note note, CancellationToken ct = default);
+    Task DeleteAsync(Note note, CancellationToken ct = default);
 }
