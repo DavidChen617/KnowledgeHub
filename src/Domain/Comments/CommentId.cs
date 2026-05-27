@@ -6,7 +6,7 @@ public sealed class CommentId : ValueObject
 {
     public Guid Value { get; }
 
-    private CommentId(Guid value) => Value = value;
+    public CommentId(Guid value) => Value = value;
 
     public static CommentId New() => new(Guid.NewGuid());
 
