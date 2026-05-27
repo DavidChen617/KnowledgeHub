@@ -76,6 +76,8 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
     public bool WasDeleted { get; private set; }
     public Note? DeletedNote { get; private set; }
 
+    public Task AddAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
+
     public Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default) =>
         Task.FromResult(returnNote);
 

@@ -88,6 +88,8 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
 {
     public bool WasUpdated { get; private set; }
 
+    public Task AddAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
+
     public Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default) =>
         Task.FromResult(returnNote);
 

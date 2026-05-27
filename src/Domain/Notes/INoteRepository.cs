@@ -4,6 +4,7 @@ namespace Domain.Notes;
 
 public interface INoteRepository
 {
+    Task AddAsync(Note note, CancellationToken ct = default);
     Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default);
     Task<Note?> GetByIdAndUserIdAsync(NoteId id, UserId userId, CancellationToken ct = default);
     Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default);
