@@ -8,6 +8,7 @@ public class Note : AggregateRoot<NoteId>
 {
     private readonly List<NoteId> _linkedNoteIds = [];
     private readonly List<NoteStructure> _structures = [];
+    private readonly List<NoteImage> _images = [];
 
     public UserId UserId { get; }
     public string Title { get; private set; }
@@ -17,6 +18,7 @@ public class Note : AggregateRoot<NoteId>
 
     public IReadOnlyList<NoteId> LinkedNoteIds => _linkedNoteIds;
     public IReadOnlyList<NoteStructure> Structures => _structures;
+    public IReadOnlyList<NoteImage> Images => _images;
 
     private Note(NoteId id, UserId userId, string title, string content) : base(id)
     {
@@ -30,6 +32,7 @@ public class Note : AggregateRoot<NoteId>
     {
         var note = new Note(NoteId.New(), userId, title, content);
         note.SyncLinks();
+        note.SyncImages();
         return note;
     }
 
@@ -38,6 +41,7 @@ public class Note : AggregateRoot<NoteId>
         Content = content;
         UpdatedAt = DateTime.UtcNow;
         SyncLinks();
+        SyncImages();
     }
 
     public void UpdateTitle(string title)
@@ -61,6 +65,11 @@ public class Note : AggregateRoot<NoteId>
         return SharedLink;
     }
 
+    public void Delete()
+    {
+        RaiseDomainEvent(new NoteDeletedEvent(Id));
+    }
+
     private void SyncLinks()
     {
         var parsed = NoteParser.ParseNoteLinks(Content);
@@ -74,5 +83,21 @@ public class Note : AggregateRoot<NoteId>
 
         if (diff.ToAdd.Count > 0 || diff.ToRemove.Count > 0)
             RaiseDomainEvent(new NoteLinksChangedEvent(Id, diff.ToAdd, diff.ToRemove));
+    }
+
+    private void SyncImages()
+    {
+        var parsed = NoteImageParser.ParseImageUrls(Content).ToHashSet();
+
+        var toDisable = _images.Where(img => img.Enable && !parsed.Contains(img.PublicUrl)).ToList();
+        foreach (var img in toDisable)
+            img.Disable();
+
+        var existingUrls = _images.Select(img => img.PublicUrl).ToHashSet();
+        foreach (var url in parsed.Where(url => !existingUrls.Contains(url)))
+            _images.Add(NoteImage.Create(Id, url));
+
+        if (toDisable.Count > 0)
+            RaiseDomainEvent(new NoteImagesChangedEvent(Id));
     }
 }

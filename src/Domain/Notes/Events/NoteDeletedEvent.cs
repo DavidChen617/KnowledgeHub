@@ -2,12 +2,8 @@ using CoreMesh.Outbox.Abstractions;
 
 namespace Domain.Notes.Events;
 
-[EventName("note.links-changed")]
-public record NoteLinksChangedEvent(
-    NoteId NoteId,
-    IReadOnlyList<NoteId> ToAdd,
-    IReadOnlyList<NoteId> ToRemove
-) : IEvent
+[EventName("note.deleted")]
+public record NoteDeletedEvent(NoteId NoteId) : IEvent
 {
     public Guid Id { get; } = Guid.NewGuid();
     public DateTime OccurredAtUtc { get; } = DateTime.UtcNow;
