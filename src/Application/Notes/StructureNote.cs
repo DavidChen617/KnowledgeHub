@@ -6,7 +6,7 @@ namespace Application.Notes;
 
 public record StructureNoteCommandRequest(NoteId NoteId, string Prompt) : IRequest<StructureNoteCommandResponse>;
 
-public record StructureNoteCommandResponse(Guid StructureId, string Content);
+public record StructureNoteCommandResponse(Guid StructureId, string Description, string Content);
 
 public class StructureNoteHandler(INoteRepository noteRepository, INoteStructurer structurer, IEmbedder embedder)
     : IRequestHandler<StructureNoteCommandRequest, StructureNoteCommandResponse?>
@@ -18,9 +18,9 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
         if(note is null)
             return null;
         
-        var content = await structurer.StructureAsync(note.Content, command.Prompt, cancellationToken);
-        var chunks = Chunker.Chunk(content, HeadingMapper);
-        var structure = note.AddStructure(command.Prompt, content, chunks);
+        var result = await structurer.StructureAsync(note.Content, command.Prompt, cancellationToken);
+        var chunks = Chunker.Chunk(result.StructuredContent, HeadingMapper);
+        var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description, chunks);
 
         var texts = structure.Chunks.Select(c => c.Artifact).ToList();
         var vectors = await embedder.EmbedBatchAsync(texts, cancellationToken);
@@ -30,7 +30,7 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
 
         await noteRepository.UpdateAsync(note, cancellationToken);
 
-        return new StructureNoteCommandResponse(structure.Id, structure.Content);
+        return new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content);
     }
 
     private static IReadOnlyList<(int, string)> HeadingMapper(string content)

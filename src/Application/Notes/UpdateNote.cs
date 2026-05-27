@@ -4,10 +4,10 @@ using Domain.Users;
 
 namespace Application.Notes;
 
-public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content)
+public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, string? Category)
     : IRequest<UpdateNoteCommandResponse>;
 
-public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, DateTime UpdatedAt);
+public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, string? Category, DateTime UpdatedAt);
 
 public class UpdateNoteHandler(INoteRepository noteRepository)
     : IRequestHandler<UpdateNoteCommandRequest, UpdateNoteCommandResponse?>
@@ -25,8 +25,11 @@ public class UpdateNoteHandler(INoteRepository noteRepository)
         if (command.Content is not null)
             note.UpdateContent(command.Content);
 
+        if (command.Category is not null)
+            note.SetCategory(command.Category);
+
         await noteRepository.UpdateAsync(note, cancellationToken);
 
-        return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.UpdatedAt);
+        return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.Category, note.UpdatedAt);
     }
 }
