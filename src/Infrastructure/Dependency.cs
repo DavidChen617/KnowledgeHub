@@ -2,6 +2,9 @@ using System.Net.Http.Headers;
 using Domain.AI;
 using Infrastructure.Embedding;
 using Infrastructure.NoteStructure;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +16,14 @@ public static class Dependency
     {
         public IServiceCollection AddInfrastructure(IConfiguration configuration)
         {
+            services.AddSingleton<DomainEventInterceptor>();
+
+            services.AddDbContext<AppDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("Default"));
+                options.AddInterceptors(sp.GetRequiredService<DomainEventInterceptor>());
+            });
+
             services.AddHttpClient<INoteStructurer, GroqNoteStructurer>(client =>
             {
                 client.BaseAddress = new Uri("https://api.groq.com/openai/v1/");
