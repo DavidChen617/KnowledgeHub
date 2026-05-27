@@ -1,3 +1,4 @@
+using Domain.Categories;
 using Domain.Notes.Events;
 using Domain.Shared;
 using Domain.Users;
@@ -13,7 +14,7 @@ public class Note : AggregateRoot<NoteId>
     public UserId UserId { get; }
     public string Title { get; private set; }
     public string Content { get; private set; }
-    public string? Category { get; private set; }
+    public CategoryId? CategoryId { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public SharedLink? SharedLink { get; private set; }
 
@@ -51,9 +52,9 @@ public class Note : AggregateRoot<NoteId>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SetCategory(string category)
+    public void SetCategory(CategoryId? categoryId)
     {
-        Category = category;
+        CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
     }
 

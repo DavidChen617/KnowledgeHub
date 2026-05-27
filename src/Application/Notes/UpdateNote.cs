@@ -1,13 +1,14 @@
 using CoreMesh.Dispatching.Abstractions;
+using Domain.Categories;
 using Domain.Notes;
 using Domain.Users;
 
 namespace Application.Notes;
 
-public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, string? Category)
+public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, CategoryId? CategoryId)
     : IRequest<UpdateNoteCommandResponse>;
 
-public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, string? Category, DateTime UpdatedAt);
+public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, CategoryId? CategoryId, DateTime UpdatedAt);
 
 public class UpdateNoteHandler(INoteRepository noteRepository)
     : IRequestHandler<UpdateNoteCommandRequest, UpdateNoteCommandResponse?>
@@ -25,11 +26,11 @@ public class UpdateNoteHandler(INoteRepository noteRepository)
         if (command.Content is not null)
             note.UpdateContent(command.Content);
 
-        if (command.Category is not null)
-            note.SetCategory(command.Category);
+        if (command.CategoryId is not null)
+            note.SetCategory(command.CategoryId);
 
         await noteRepository.UpdateAsync(note, cancellationToken);
 
-        return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.Category, note.UpdatedAt);
+        return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.CategoryId, note.UpdatedAt);
     }
 }
