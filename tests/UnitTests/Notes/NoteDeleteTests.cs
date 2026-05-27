@@ -84,6 +84,12 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
 
     public Task UpdateAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
 
+    public Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<Note>>([]);
+
+    public Task<IReadOnlyList<Note>> SearchByTitleAsync(UserId userId, string title, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<Note>>([]);
+
     public Task DeleteAsync(Note note, CancellationToken ct = default)
     {
         WasDeleted = true;

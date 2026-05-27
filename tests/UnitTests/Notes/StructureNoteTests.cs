@@ -116,14 +116,15 @@ public class StructureNoteTests
         var structurer = new GroqNoteStructurer(GroqClient());
         var structured = await structurer.StructureAsync(note.Content, "請將這篇筆記結構化，整理成清楚的重點");
 
-        Assert.NotEmpty(structured);
-        Assert.Contains("###", structured);
+        Assert.NotEmpty(structured.StructuredContent);
+        Assert.Contains("###", structured.StructuredContent);
 
-        Console.WriteLine($"\n[3] Groq 結構化結果：\n{structured}");
+        Console.WriteLine($"\n[3] Groq 結構化結果：\n{structured.StructuredContent}");
+        Console.WriteLine($"    描述：{structured.Description}");
 
         // --- 4. Chunk ---
-        var rawChunks = Chunker.Chunk(structured, HeadingMapper);
-        var structure = note.AddStructure("請將這篇筆記結構化，整理成清楚的重點", structured, rawChunks);
+        var rawChunks = Chunker.Chunk(structured.StructuredContent, HeadingMapper);
+        var structure = note.AddStructure("請將這篇筆記結構化，整理成清楚的重點", structured.StructuredContent, structured.Description, rawChunks);
 
         Assert.Single(note.Structures);
         Assert.True(structure.Chunks.Count > 0);

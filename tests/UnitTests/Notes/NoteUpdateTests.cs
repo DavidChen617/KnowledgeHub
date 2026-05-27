@@ -29,7 +29,7 @@ public class NoteUpdateTests
         // --- 2. 非擁有者更新，回傳 null ---
         var repo = new FakeNoteRepository(returnNote: null);
         var handler = new UpdateNoteHandler(repo);
-        var wrongCommand = new UpdateNoteCommandRequest(note.Id, UserId.New(), "新標題", null);
+        var wrongCommand = new UpdateNoteCommandRequest(note.Id, UserId.New(), "新標題", null, null);
 
         var notFoundResult = await handler.Handle(wrongCommand);
 
@@ -41,7 +41,7 @@ public class NoteUpdateTests
         repo = new FakeNoteRepository(returnNote: note);
         handler = new UpdateNoteHandler(repo);
         var linksEventCountBefore = note.DomainEvents.OfType<NoteLinksChangedEvent>().Count();
-        var titleCommand = new UpdateNoteCommandRequest(note.Id, userId, "新標題", null);
+        var titleCommand = new UpdateNoteCommandRequest(note.Id, userId, "新標題", null, null);
 
         var titleResult = await handler.Handle(titleCommand);
 
@@ -54,7 +54,7 @@ public class NoteUpdateTests
         // --- 4. 更新內容：移除圖片、移除連結 ---
         repo = new FakeNoteRepository(returnNote: note);
         handler = new UpdateNoteHandler(repo);
-        var contentCommand = new UpdateNoteCommandRequest(note.Id, userId, null, "重寫內容，不含圖片與連結");
+        var contentCommand = new UpdateNoteCommandRequest(note.Id, userId, null, "重寫內容，不含圖片與連結", null);
 
         var contentResult = await handler.Handle(contentCommand);
 
@@ -73,7 +73,7 @@ public class NoteUpdateTests
         // --- 5. 同時更新標題與內容 ---
         repo = new FakeNoteRepository(returnNote: note);
         handler = new UpdateNoteHandler(repo);
-        var bothCommand = new UpdateNoteCommandRequest(note.Id, userId, "最終標題", "最終內容");
+        var bothCommand = new UpdateNoteCommandRequest(note.Id, userId, "最終標題", "最終內容", null);
 
         var bothResult = await handler.Handle(bothCommand);
 
@@ -99,6 +99,12 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
         WasUpdated = true;
         return Task.CompletedTask;
     }
+
+    public Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<Note>>([]);
+
+    public Task<IReadOnlyList<Note>> SearchByTitleAsync(UserId userId, string title, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<Note>>([]);
 
     public Task DeleteAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
 }

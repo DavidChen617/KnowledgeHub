@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Domain.AI;
 using Domain.Exceptions;
 
@@ -9,20 +10,45 @@ public class GroqNoteStructurer(HttpClient httpClient) : INoteStructurer
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    private const string SystemPrompt =
-        "你是一個筆記助手，請根據使用者的指示將筆記內容結構化，使用 Markdown 格式，每個段落以 ### 開頭。只回傳結構化後的內容，不要有多餘說明。";
+    private const string SystemPrompt = """
+        你是一個筆記整理助手。根據使用者提供的筆記內容與指示，以 JSON 格式回傳以下兩個欄位：
+        - description: 一句話摘要，說明筆記的核心內容
+        - structured_content: 結構化的 Markdown 內容，每個段落以 ### 開頭
 
-    public async Task<string> StructureAsync(string content, string prompt, CancellationToken cancellationToken = default)
+        只回傳 JSON，不要有其他說明文字。
+        """;
+
+    public async Task<NoteStructureResult> StructureAsync(string content, string userPrompt, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions");
         request.Content = JsonContent.Create(new
         {
             model = "llama-3.3-70b-versatile",
             temperature = 0.2,
+            response_format = new
+            {
+                type = "json_schema",
+                json_schema = new
+                {
+                    name = "note_structure",
+                    strict = true,
+                    schema = new
+                    {
+                        type = "object",
+                        properties = new
+                        {
+                            description = new { type = "string" },
+                            structured_content = new { type = "string" }
+                        },
+                        required = new[] { "description", "structured_content" },
+                        additionalProperties = false
+                    }
+                }
+            },
             messages = new[]
             {
                 new { role = "system", content = SystemPrompt },
-                new { role = "user",   content = $"{prompt}\n\n{content}" }
+                new { role = "user",   content = $"{userPrompt}\n\n{content}" }
             }
         });
 
@@ -42,11 +68,24 @@ public class GroqNoteStructurer(HttpClient httpClient) : INoteStructurer
         if (!response.IsSuccessStatusCode)
             throw new AiServiceException($"Groq error {(int)response.StatusCode}: {await response.Content.ReadAsStringAsync(cancellationToken)}");
 
-        var result = await response.Content.ReadFromJsonAsync<ChatResponse>(JsonOptions, cancellationToken)
+        var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>(JsonOptions, cancellationToken)
             ?? throw new AiServiceException("Groq 回傳空的 response。");
 
-        return result.Choices[0].Message.Content;
+        var json = chatResponse.Choices[0].Message.Content;
+
+        var dto = JsonSerializer.Deserialize<NoteStructureDto>(json, JsonOptions)
+            ?? throw new AiServiceException("Groq 回傳的 JSON 無法解析。");
+
+        return new NoteStructureResult(dto.Description, dto.StructuredContent);
     }
+}
+
+file record NoteStructureDto
+{
+    public required string Description { get; init; }
+
+    [JsonPropertyName("structured_content")]
+    public required string StructuredContent { get; init; }
 }
 
 file record ChatResponse
