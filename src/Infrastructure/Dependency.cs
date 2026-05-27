@@ -1,9 +1,14 @@
 using System.Net.Http.Headers;
 using Domain.AI;
+using Domain.Categories;
+using Domain.Notes;
+using Domain.Shared;
 using Infrastructure.Embedding;
 using Infrastructure.NoteStructure;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
+using Infrastructure.Persistence.Repositories;
+using Infrastructure.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +22,11 @@ public static class Dependency
         public IServiceCollection AddInfrastructure(IConfiguration configuration)
         {
             services.AddSingleton<DomainEventInterceptor>();
+
+            services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+            services.AddScoped<INoteRepository, NoteRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<INoteSearcher, NoteSearcher>();
 
             services.AddDbContext<AppDbContext>((sp, options) =>
             {

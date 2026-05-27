@@ -12,6 +12,7 @@ internal sealed class NoteStructureChunkConfiguration : IEntityTypeConfiguration
 
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id")
             .HasComment("Chunk 唯一識別碼");
 

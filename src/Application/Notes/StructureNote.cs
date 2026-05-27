@@ -1,6 +1,7 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.AI;
 using Domain.Notes;
+using Domain.Shared;
 
 namespace Application.Notes;
 
@@ -8,7 +9,7 @@ public record StructureNoteCommandRequest(NoteId NoteId, string Prompt) : IReque
 
 public record StructureNoteCommandResponse(Guid StructureId, string Description, string Content);
 
-public class StructureNoteHandler(INoteRepository noteRepository, INoteStructurer structurer, IEmbedder embedder)
+public class StructureNoteHandler(INoteRepository noteRepository, INoteStructurer structurer, IEmbedder embedder, IUnitOfWork unitOfWork)
     : IRequestHandler<StructureNoteCommandRequest, StructureNoteCommandResponse?>
 {
     public async Task<StructureNoteCommandResponse?> Handle(StructureNoteCommandRequest command, CancellationToken cancellationToken = default)
@@ -29,6 +30,7 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
             structure.Chunks[i].SetEmbedding(vectors[i]);
 
         await noteRepository.UpdateAsync(note, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content);
     }

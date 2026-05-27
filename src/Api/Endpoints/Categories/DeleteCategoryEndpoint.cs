@@ -11,24 +11,30 @@ public sealed class DeleteCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 {
     public void AddRoute(RouteGroupBuilder group)
     {
-        group.MapDelete("/{id:guid}", async (
-            Guid id,
-            IDispatcher dispatcher,
-            HttpContext ctx,
-            CancellationToken ct) =>
-        {
-            if (!ctx.TryGetUserId(out var userId))
-                return Results.Unauthorized();
+        group.MapDelete("/{id:guid}", HandleAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-            try
-            {
-                var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), userId), ct);
-                return result is null ? Results.NotFound() : Results.NoContent();
-            }
-            catch (CategoryInUseException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        });
+    private static async Task<IResult> HandleAsync(
+        Guid id,
+        IDispatcher dispatcher,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        if (!ctx.TryGetUserId(out var userId))
+            return Results.Unauthorized();
+
+        try
+        {
+            var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), userId), ct);
+            return result is null ? Results.NotFound() : Results.NoContent();
+        }
+        catch (CategoryInUseException ex)
+        {
+            return Results.Conflict(new { error = ex.Message });
+        }
     }
 }

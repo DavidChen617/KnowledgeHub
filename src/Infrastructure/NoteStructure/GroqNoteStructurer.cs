@@ -25,26 +25,7 @@ public class GroqNoteStructurer(HttpClient httpClient) : INoteStructurer
         {
             model = "llama-3.3-70b-versatile",
             temperature = 0.2,
-            response_format = new
-            {
-                type = "json_schema",
-                json_schema = new
-                {
-                    name = "note_structure",
-                    strict = true,
-                    schema = new
-                    {
-                        type = "object",
-                        properties = new
-                        {
-                            description = new { type = "string" },
-                            structured_content = new { type = "string" }
-                        },
-                        required = new[] { "description", "structured_content" },
-                        additionalProperties = false
-                    }
-                }
-            },
+            response_format = new { type = "json_object" },
             messages = new[]
             {
                 new { role = "system", content = SystemPrompt },

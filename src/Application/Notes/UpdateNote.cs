@@ -1,6 +1,7 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Notes;
+using Domain.Shared;
 using Domain.Users;
 
 namespace Application.Notes;
@@ -10,7 +11,7 @@ public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Tit
 
 public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, CategoryId? CategoryId, DateTime UpdatedAt);
 
-public class UpdateNoteHandler(INoteRepository noteRepository)
+public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<UpdateNoteCommandRequest, UpdateNoteCommandResponse?>
 {
     public async Task<UpdateNoteCommandResponse?> Handle(UpdateNoteCommandRequest command, CancellationToken cancellationToken = default)
@@ -30,6 +31,7 @@ public class UpdateNoteHandler(INoteRepository noteRepository)
             note.SetCategory(command.CategoryId);
 
         await noteRepository.UpdateAsync(note, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.CategoryId, note.UpdatedAt);
     }

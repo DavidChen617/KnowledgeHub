@@ -1,6 +1,7 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Exceptions;
+using Domain.Shared;
 using Domain.Users;
 
 namespace Application.Categories;
@@ -10,7 +11,7 @@ public record DeleteCategoryCommandRequest(CategoryId CategoryId, UserId UserId)
 
 public record DeleteCategoryCommandResponse;
 
-public class DeleteCategoryHandler(ICategoryRepository categoryRepository)
+public class DeleteCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteCategoryCommandRequest, DeleteCategoryCommandResponse?>
 {
     public async Task<DeleteCategoryCommandResponse?> Handle(DeleteCategoryCommandRequest command, CancellationToken cancellationToken = default)
@@ -24,6 +25,7 @@ public class DeleteCategoryHandler(ICategoryRepository categoryRepository)
             throw new CategoryInUseException();
 
         await categoryRepository.DeleteAsync(category, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new DeleteCategoryCommandResponse();
     }

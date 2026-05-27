@@ -9,18 +9,22 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
 {
     public void AddRoute(RouteGroupBuilder group)
     {
-        group.MapGet("/search", async (
-            string q,
-            IDispatcher dispatcher,
-            HttpContext ctx,
-            CancellationToken ct) =>
-        {
-            if (!ctx.TryGetUserId(out var userId))
-                return Results.Unauthorized();
+        group.MapGet("/search", HandleAsync)
+            .Produces<SearchQueryResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-            var result = await dispatcher.Send(new SearchQueryRequest(userId, q), ct);
+    private static async Task<IResult> HandleAsync(
+        string q,
+        IDispatcher dispatcher,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        if (!ctx.TryGetUserId(out var userId))
+            return Results.Unauthorized();
 
-            return Results.Ok(result);
-        });
+        var result = await dispatcher.Send(new SearchQueryRequest(userId, q), ct);
+
+        return Results.Ok(result);
     }
 }

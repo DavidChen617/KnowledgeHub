@@ -11,24 +11,29 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
 {
     public void AddRoute(RouteGroupBuilder group)
     {
-        group.MapPut("/{id:guid}", async (
-            Guid id,
-            UpdateNoteRequest req,
-            IDispatcher dispatcher,
-            HttpContext ctx,
-            CancellationToken ct) =>
-        {
-            if (!ctx.TryGetUserId(out var userId))
-                return Results.Unauthorized();
+        group.MapPut("/{id:guid}", HandleAsync)
+            .Produces<UpdateNoteCommandResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-            var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
+    private static async Task<IResult> HandleAsync(
+        Guid id,
+        UpdateNoteRequest req,
+        IDispatcher dispatcher,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        if (!ctx.TryGetUserId(out var userId))
+            return Results.Unauthorized();
 
-            var result = await dispatcher.Send(
-                new UpdateNoteCommandRequest(new NoteId(id), userId, req.Title, req.Content, categoryId), ct);
+        var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
-            return result is null ? Results.NotFound() : Results.Ok(result);
-        });
+        var result = await dispatcher.Send(
+            new UpdateNoteCommandRequest(new NoteId(id), userId, req.Title, req.Content, categoryId), ct);
+
+        return result is null ? Results.NotFound() : Results.Ok(result);
     }
 }
 
-public record UpdateNoteRequest(string? Title, string? Content, Guid? CategoryId);
+public record UpdateNoteRequest(string? Title = null, string? Content = null, Guid? CategoryId = null);

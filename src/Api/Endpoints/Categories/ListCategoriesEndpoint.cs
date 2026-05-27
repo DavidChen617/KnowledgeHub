@@ -9,17 +9,21 @@ public sealed class ListCategoriesEndpoint : IGroupedEndpoint<CategoriesGroup>
 {
     public void AddRoute(RouteGroupBuilder group)
     {
-        group.MapGet("/", async (
-            IDispatcher dispatcher,
-            HttpContext ctx,
-            CancellationToken ct) =>
-        {
-            if (!ctx.TryGetUserId(out var userId))
-                return Results.Unauthorized();
+        group.MapGet("/", HandleAsync)
+            .Produces<ListCategoriesQueryResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-            var result = await dispatcher.Send(new ListCategoriesQueryRequest(userId), ct);
+    private static async Task<IResult> HandleAsync(
+        IDispatcher dispatcher,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        if (!ctx.TryGetUserId(out var userId))
+            return Results.Unauthorized();
 
-            return Results.Ok(result);
-        });
+        var result = await dispatcher.Send(new ListCategoriesQueryRequest(userId), ct);
+
+        return Results.Ok(result);
     }
 }

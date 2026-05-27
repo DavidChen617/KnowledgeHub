@@ -12,6 +12,7 @@ internal sealed class NoteStructureConfiguration : IEntityTypeConfiguration<DN.N
 
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id")
             .HasComment("結構化記錄唯一識別碼");
 

@@ -1,5 +1,6 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
+using Domain.Shared;
 using Domain.Users;
 
 namespace Application.Notes;
@@ -8,7 +9,7 @@ public record DeleteNoteCommandRequest(NoteId NoteId, UserId UserId) : IRequest<
 
 public record DeleteNoteCommandResponse;
 
-public class DeleteNoteHandler(INoteRepository noteRepository)
+public class DeleteNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteNoteCommandRequest, DeleteNoteCommandResponse?>
 {
     public async Task<DeleteNoteCommandResponse?> Handle(DeleteNoteCommandRequest command, CancellationToken cancellationToken = default)
@@ -20,6 +21,7 @@ public class DeleteNoteHandler(INoteRepository noteRepository)
 
         note.Delete();
         await noteRepository.DeleteAsync(note, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new DeleteNoteCommandResponse();
     }

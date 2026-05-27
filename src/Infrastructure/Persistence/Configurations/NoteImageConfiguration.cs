@@ -12,6 +12,7 @@ internal sealed class NoteImageConfiguration : IEntityTypeConfiguration<NoteImag
 
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id")
             .HasComment("圖片記錄唯一識別碼");
 

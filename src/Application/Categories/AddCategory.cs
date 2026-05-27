@@ -1,6 +1,7 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Exceptions;
+using Domain.Shared;
 using Domain.Users;
 
 namespace Application.Categories;
@@ -10,7 +11,7 @@ public record AddCategoryCommandRequest(UserId UserId, string Name)
 
 public record AddCategoryCommandResponse(CategoryId CategoryId, string Name);
 
-public class AddCategoryHandler(ICategoryRepository categoryRepository)
+public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<AddCategoryCommandRequest, AddCategoryCommandResponse>
 {
     public async Task<AddCategoryCommandResponse> Handle(AddCategoryCommandRequest command, CancellationToken cancellationToken = default)
@@ -23,6 +24,7 @@ public class AddCategoryHandler(ICategoryRepository categoryRepository)
         var category = Category.Create(command.UserId, command.Name);
 
         await categoryRepository.AddAsync(category, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new AddCategoryCommandResponse(category.Id, category.Name);
     }

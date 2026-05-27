@@ -12,6 +12,7 @@ internal sealed class EmbeddingConfiguration : IEntityTypeConfiguration<DAI.Embe
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id")
             .HasComment("Embedding 唯一識別碼");
 

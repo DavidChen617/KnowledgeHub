@@ -72,7 +72,7 @@ internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
             nl.Property(id => id.Value)
                 .HasColumnName("linked_note_id")
                 .HasComment("被引用的筆記 ID");
-            nl.HasKey("note_id", "linked_note_id");
+            nl.HasKey("note_id", "Value");
         });
         builder.Navigation(n => n.LinkedNoteIds).HasField("_linkedNoteIds");
 
