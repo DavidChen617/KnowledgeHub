@@ -1,5 +1,6 @@
 using Domain.Comments;
 using Domain.Notes;
+using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Repositories;
@@ -22,5 +23,27 @@ internal sealed class CommentRepository(AppDbContext db) : ICommentRepository
     {
         db.Comments.Remove(comment);
         return Task.CompletedTask;
+    }
+
+    public async Task AddLikeAsync(CommentLike like, CancellationToken ct = default) =>
+        await db.CommentLikes.AddAsync(like, ct);
+
+    public Task<CommentLike?> FindLikeAsync(CommentId commentId, UserId userId, CancellationToken ct = default) =>
+        db.CommentLikes.FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == userId, ct);
+
+    public Task DeleteLikeAsync(CommentLike like, CancellationToken ct = default)
+    {
+        db.CommentLikes.Remove(like);
+        return Task.CompletedTask;
+    }
+
+    public async Task<Dictionary<CommentId, int>> GetLikeCountsAsync(IEnumerable<CommentId> commentIds, CancellationToken ct = default)
+    {
+        var ids = commentIds.Select(id => id.Value).ToList();
+        return await db.CommentLikes
+            .Where(l => ids.Contains(l.CommentId.Value))
+            .GroupBy(l => l.CommentId)
+            .Select(g => new { CommentId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.CommentId, x => x.Count, ct);
     }
 }

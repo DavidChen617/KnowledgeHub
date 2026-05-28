@@ -14,6 +14,7 @@ public record CommentResponse(
     string Username,
     string? AvatarUrl,
     string Content,
+    int LikeCount,
     DateTime CreatedAt,
     DateTime UpdatedAt);
 
@@ -41,6 +42,8 @@ public class GetCommentsHandler(
         var users = await Task.WhenAll(userIds.Select(id => userRepository.GetByIdAsync(id, cancellationToken)));
         var userMap = users.Where(u => u is not null).ToDictionary(u => u!.Id, u => u!);
 
+        var likeCounts = await commentRepository.GetLikeCountsAsync(comments.Select(c => c.Id), cancellationToken);
+
         var response = comments.Select(c =>
         {
             var user = userMap.GetValueOrDefault(c.UserId);
@@ -51,6 +54,7 @@ public class GetCommentsHandler(
                 user?.Username ?? string.Empty,
                 user?.AvatarUrl,
                 c.Content,
+                likeCounts.GetValueOrDefault(c.Id, 0),
                 c.CreatedAt,
                 c.UpdatedAt);
         }).ToList();
