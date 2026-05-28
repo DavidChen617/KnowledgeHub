@@ -33,6 +33,12 @@ public static class Dependency
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<INoteSearcher, NoteSearcher>();
+            services.AddSingleton(_ => new CloudinaryDotNet.Cloudinary(new CloudinaryDotNet.Account(
+                configuration["Cloudinary:CloudName"],
+                configuration["Cloudinary:ApiKey"],
+                configuration["Cloudinary:ApiSecret"]
+            )) { Api = { Secure = true } });
+
             services.AddScoped<IImageStorage, CloudinaryImageStorage>();
 
             services.AddDbContext<AppDbContext>((sp, options) =>
