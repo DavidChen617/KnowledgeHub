@@ -6,7 +6,7 @@ using Domain.AI;
 using Domain.Categories;
 using Domain.Notes;
 using Domain.Shared;
-using Infrastructure.Cloudinary;
+using Infrastructure.FileStore;
 using Infrastructure.Embedding;
 using Infrastructure.Messaging;
 using Infrastructure.Messaging.Kafka;

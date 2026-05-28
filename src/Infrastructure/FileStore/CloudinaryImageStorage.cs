@@ -3,7 +3,7 @@ using CloudinaryDotNet.Actions;
 using Domain.Notes;
 using Microsoft.Extensions.Logging;
 
-namespace Infrastructure.Cloudinary;
+namespace Infrastructure.FileStore;
 
 internal sealed class CloudinaryImageStorage(
     CloudinaryDotNet.Cloudinary cloudinary,
