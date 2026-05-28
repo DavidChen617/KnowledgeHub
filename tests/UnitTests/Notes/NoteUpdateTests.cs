@@ -41,7 +41,7 @@ public class NoteUpdateTests
         // --- 3. 只更新標題 ---
         repo = new FakeNoteRepository(returnNote: note);
         handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
-        var linksEventCountBefore = note.DomainEvents.OfType<NoteLinksChangedEvent>().Count();
+        var linkedCountBefore = note.LinkedNoteIds.Count;
         var titleCommand = new UpdateNoteCommandRequest(note.Id, userId, "新標題", null, null);
 
         var titleResult = await handler.Handle(titleCommand);
@@ -49,7 +49,7 @@ public class NoteUpdateTests
         Assert.NotNull(titleResult);
         Assert.Equal("新標題", titleResult.Title);
         Assert.True(repo.WasUpdated);
-        Assert.Equal(linksEventCountBefore, note.DomainEvents.OfType<NoteLinksChangedEvent>().Count());
+        Assert.Equal(linkedCountBefore, note.LinkedNoteIds.Count);
         Console.WriteLine($"[3] 只更新標題：{titleResult.Title}");
 
         // --- 4. 更新內容：移除圖片、移除連結 ---
@@ -62,14 +62,13 @@ public class NoteUpdateTests
         Assert.NotNull(contentResult);
         Assert.Equal("重寫內容，不含圖片與連結", contentResult.Content);
 
-        var linksEvent = note.DomainEvents.OfType<NoteLinksChangedEvent>().Last();
-        Assert.Contains(new NoteId(refId), linksEvent.ToRemove);
+        Assert.Empty(note.LinkedNoteIds);
 
         var disabledImage = note.Images.Single(img => img.PublicUrl == imageUrl);
         Assert.False(disabledImage.Enable);
         Assert.Single(note.DomainEvents.OfType<NoteImagesChangedEvent>());
 
-        Console.WriteLine($"[4] 更新內容：連結移除 {linksEvent.ToRemove.Count} 個，圖片 disable {note.Images.Count(img => !img.Enable)} 張");
+        Console.WriteLine($"[4] 更新內容：連結清空，圖片 disable {note.Images.Count(img => !img.Enable)} 張");
 
         // --- 5. 同時更新標題與內容 ---
         repo = new FakeNoteRepository(returnNote: note);

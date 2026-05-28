@@ -104,13 +104,7 @@ public class StructureNoteTests
         Assert.Contains(new NoteId(refId2), note.LinkedNoteIds);
         Assert.Contains(new NoteId(refId3), note.LinkedNoteIds);
 
-        var linkEvent = note.DomainEvents.OfType<NoteLinksChangedEvent>().Last();
-        Assert.Contains(new NoteId(refId3), linkEvent.ToAdd);
-        Assert.Contains(new NoteId(refId1), linkEvent.ToRemove);
-
         Console.WriteLine($"[2] 更新後連結：{string.Join(", ", note.LinkedNoteIds.Select(x => x.Value.ToString()[..8]))}");
-        Console.WriteLine($"    新增：{string.Join(", ", linkEvent.ToAdd.Select(x => x.Value.ToString()[..8]))}");
-        Console.WriteLine($"    移除：{string.Join(", ", linkEvent.ToRemove.Select(x => x.Value.ToString()[..8]))}");
 
         // --- 3. AI 結構化 ---
         var structurer = new GroqNoteStructurer(GroqClient());

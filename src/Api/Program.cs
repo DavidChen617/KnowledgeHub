@@ -1,4 +1,5 @@
 using Api.Endpoints.Notes;
+using Application.EventHandlers;
 using Application.Notes;
 using CoreMesh.Dispatching.Extensions;
 using CoreMesh.Endpoints.Extensions;
@@ -25,7 +26,7 @@ builder.Services.AddOpenApi(options =>
 
 builder.Services.AddDispatching([typeof(AddNoteHandler).Assembly]);
 builder.Services.AddEndpoints([typeof(NotesGroup).Assembly]);
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, typeof(NoteDeletedEventHandler).Assembly);
 
 var app = builder.Build();
 
