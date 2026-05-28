@@ -8,6 +8,6 @@ public sealed class NotesGroup : IGroupEndpoint
 
     public void Configure(RouteGroupBuilder group)
     {
-        group.WithTags("Notes");
+        group.WithTags("Notes").RequireAuthorization();
     }
 }

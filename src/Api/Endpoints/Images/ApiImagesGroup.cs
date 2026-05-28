@@ -8,6 +8,6 @@ public sealed class ApiImagesGroup : IGroupEndpoint
 
     public void Configure(RouteGroupBuilder group)
     {
-        group.WithTags("Images");
+        group.WithTags("Images").RequireAuthorization();
     }
 }

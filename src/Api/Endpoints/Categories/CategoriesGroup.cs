@@ -8,6 +8,6 @@ public sealed class CategoriesGroup : IGroupEndpoint
 
     public void Configure(RouteGroupBuilder group)
     {
-        group.WithTags("Categories");
+        group.WithTags("Categories").RequireAuthorization();
     }
 }
