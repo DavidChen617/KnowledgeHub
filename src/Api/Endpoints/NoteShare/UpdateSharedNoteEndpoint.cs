@@ -9,7 +9,9 @@ public sealed class UpdateSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPatch("/{token}", HandleAsync)
+            .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound);
     }
