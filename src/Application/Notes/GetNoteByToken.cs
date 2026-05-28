@@ -12,7 +12,8 @@ public record SharedNoteResponse(
     Guid? CategoryId,
     DateTime UpdatedAt,
     IReadOnlyList<Guid> LinkedNoteIds,
-    IReadOnlyList<string> Images);
+    IReadOnlyList<string> Images,
+    SharePermission Permission);
 
 public class GetNoteByTokenHandler(INoteRepository noteRepository)
     : IRequestHandler<GetNoteByTokenQuery, SharedNoteResponse?>
@@ -29,6 +30,7 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository)
             note.CategoryId?.Value,
             note.UpdatedAt,
             note.LinkedNoteIds.Select(id => id.Value).ToList(),
-            note.Images.Where(img => img.Enable).Select(img => img.PublicUrl).ToList());
+            note.Images.Where(img => img.Enable).Select(img => img.PublicUrl).ToList(),
+            note.SharedLink!.Permission);
     }
 }

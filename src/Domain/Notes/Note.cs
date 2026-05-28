@@ -66,9 +66,9 @@ public class Note : AggregateRoot<NoteId>
         return structure;
     }
 
-    public SharedLink CreateSharedLink()
+    public SharedLink CreateSharedLink(SharePermission permission)
     {
-        SharedLink = SharedLink.Create();
+        SharedLink = SharedLink.Create(permission);
         UpdatedAt = DateTime.UtcNow;
         return SharedLink;
     }
