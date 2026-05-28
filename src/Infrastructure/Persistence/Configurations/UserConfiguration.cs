@@ -28,6 +28,11 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasComment("使用者顯示名稱");
 
+        builder.Property(u => u.AvatarUrl)
+            .HasMaxLength(1024)
+            .HasColumnName("avatar_url")
+            .HasComment("使用者大頭貼 URL");
+
         builder.Property(u => u.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()

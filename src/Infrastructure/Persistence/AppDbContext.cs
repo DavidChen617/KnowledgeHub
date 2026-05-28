@@ -9,6 +9,8 @@ namespace Infrastructure.Persistence;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserIdentity> UserIdentities => Set<UserIdentity>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();

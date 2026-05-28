@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Domain.Users;
 
 namespace Api.Extensions;
@@ -8,8 +9,8 @@ public static class HttpContextExtensions
     {
         public bool TryGetUserId(out UserId userId)
         {
-            if (ctx.Request.Headers.TryGetValue("X-User-Id", out var value) &&
-                Guid.TryParse(value, out var guid))
+            var sub = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (sub is not null && Guid.TryParse(sub, out var guid))
             {
                 userId = new UserId(guid);
                 return true;

@@ -1,11 +1,15 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using Confluent.Kafka;
 using CoreMesh.Outbox.Extensions;
 using Domain.AI;
 using Domain.Categories;
 using Domain.Notes;
 using Domain.Shared;
+using Domain.Users;
+using Domain.Users;
+using Infrastructure.Auth;
 using Infrastructure.FileStore;
 using Infrastructure.Embedding;
 using Infrastructure.Messaging;
@@ -18,6 +22,7 @@ using Infrastructure.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure;
 
@@ -30,9 +35,12 @@ public static class Dependency
             services.AddSingleton<DomainEventInterceptor>();
 
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<INoteSearcher, NoteSearcher>();
+            services.AddScoped<IIdentityProvider, GoogleIdentityProvider>();
+            services.AddScoped<ITokenIssuer, JwtTokenIssuer>();
             services.AddSingleton(_ => new CloudinaryDotNet.Cloudinary(new CloudinaryDotNet.Account(
                 configuration["Cloudinary:CloudName"],
                 configuration["Cloudinary:ApiKey"],
