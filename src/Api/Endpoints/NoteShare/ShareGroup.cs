@@ -1,6 +1,6 @@
 using CoreMesh.Endpoints;
 
-namespace Api.Endpoints.Share;
+namespace Api.Endpoints.NoteShare;
 
 public sealed class ShareGroup : IGroupEndpoint
 {

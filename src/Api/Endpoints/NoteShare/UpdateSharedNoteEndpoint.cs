@@ -2,7 +2,7 @@ using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 
-namespace Api.Endpoints.Share;
+namespace Api.Endpoints.NoteShare;
 
 public sealed class UpdateSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
 {
