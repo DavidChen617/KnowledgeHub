@@ -3,7 +3,7 @@ using Domain.Notes;
 
 namespace Application.Images;
 
-public record UploadImagesCommand(IReadOnlyList<ImageUploadItem> Items)
+public record UploadImagesCommandRequest(IReadOnlyList<ImageUploadItem> Items)
     : IRequest<IReadOnlyList<UploadedImageResult>>;
 
 public record ImageUploadItem(Stream Content, string FileName);
@@ -11,10 +11,10 @@ public record ImageUploadItem(Stream Content, string FileName);
 public record UploadedImageResult(string OriginalName, string StorageKey);
 
 public class UploadImagesHandler(IImageStorage imageStorage)
-    : IRequestHandler<UploadImagesCommand, IReadOnlyList<UploadedImageResult>>
+    : IRequestHandler<UploadImagesCommandRequest, IReadOnlyList<UploadedImageResult>>
 {
     public async Task<IReadOnlyList<UploadedImageResult>> Handle(
-        UploadImagesCommand command, CancellationToken ct)
+        UploadImagesCommandRequest command, CancellationToken ct)
     {
         var tasks = command.Items.Select(async item =>
         {

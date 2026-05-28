@@ -4,20 +4,22 @@ using Domain.Users;
 
 namespace Application.Users;
 
-public record UpdateAvatarCommand(UserId UserId, string AvatarUrl) : IRequest<bool>;
+public record UpdateAvatarCommandRequest(UserId UserId, string AvatarUrl) : IRequest<UpdateAvatarCommandResponse>;
+
+public enum UpdateAvatarCommandResponse { Success, NotFound }
 
 public class UpdateAvatarHandler(IUserRepository userRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateAvatarCommand, bool>
+    : IRequestHandler<UpdateAvatarCommandRequest, UpdateAvatarCommandResponse>
 {
-    public async Task<bool> Handle(UpdateAvatarCommand command, CancellationToken cancellationToken = default)
+    public async Task<UpdateAvatarCommandResponse> Handle(UpdateAvatarCommandRequest command, CancellationToken cancellationToken = default)
     {
         var user = await userRepository.GetByIdAsync(command.UserId, cancellationToken);
-        if (user is null) return false;
+        if (user is null) return UpdateAvatarCommandResponse.NotFound;
 
         user.UpdateAvatar(command.AvatarUrl);
         await userRepository.UpdateAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return UpdateAvatarCommandResponse.Success;
     }
 }

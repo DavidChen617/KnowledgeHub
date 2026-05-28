@@ -5,16 +5,16 @@ using Domain.Users;
 
 namespace Application.Notes;
 
-public record GetNoteGraphQuery(UserId UserId) : IRequest<NoteGraphResponse>;
+public record GetNoteGraphQueryRequest(UserId UserId) : IRequest<GetNoteGraphQueryResponse>;
 
 public record GraphNode(string Id, string Type, string Label);
 public record GraphEdge(string Source, string Target, string Type);
-public record NoteGraphResponse(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
+public record GetNoteGraphQueryResponse(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 public class GetNoteGraphHandler(INoteRepository noteRepository, ICategoryRepository categoryRepository)
-    : IRequestHandler<GetNoteGraphQuery, NoteGraphResponse>
+    : IRequestHandler<GetNoteGraphQueryRequest, GetNoteGraphQueryResponse>
 {
-    public async Task<NoteGraphResponse> Handle(GetNoteGraphQuery query, CancellationToken cancellationToken = default)
+    public async Task<GetNoteGraphQueryResponse> Handle(GetNoteGraphQueryRequest query, CancellationToken cancellationToken = default)
     {
         var notes = await noteRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
         var categories = await categoryRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
@@ -38,6 +38,6 @@ public class GetNoteGraphHandler(INoteRepository noteRepository, ICategoryReposi
                 edges.Add(new GraphEdge($"note-{note.Id.Value}", $"note-{linkedId.Value}", "link"));
         }
 
-        return new NoteGraphResponse(nodes, edges);
+        return new GetNoteGraphQueryResponse(nodes, edges);
     }
 }

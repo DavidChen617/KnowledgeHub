@@ -22,12 +22,12 @@ public sealed class UpdateSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new UpdateNoteByTokenCommand(token, req.Content), ct);
+        var result = await dispatcher.Send(new UpdateNoteByTokenCommandRequest(token, req.Content), ct);
 
         return result switch
         {
-            UpdateNoteByTokenResult.Success => Results.NoContent(),
-            UpdateNoteByTokenResult.Forbidden => Results.Forbid(),
+            UpdateNoteByTokenCommandResponse.Success => Results.NoContent(),
+            UpdateNoteByTokenCommandResponse.Forbidden => Results.Forbid(),
             _ => Results.NotFound()
         };
     }

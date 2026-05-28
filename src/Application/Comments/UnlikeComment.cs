@@ -5,21 +5,21 @@ using Domain.Users;
 
 namespace Application.Comments;
 
-public record UnlikeCommentCommand(CommentId CommentId, UserId UserId) : IRequest<UnlikeCommentResult>;
+public record UnlikeCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<UnlikeCommentCommandResponse>;
 
-public enum UnlikeCommentResult { Success, NotFound }
+public enum UnlikeCommentCommandResponse { Success, NotFound }
 
 public class UnlikeCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UnlikeCommentCommand, UnlikeCommentResult>
+    : IRequestHandler<UnlikeCommentCommandRequest, UnlikeCommentCommandResponse>
 {
-    public async Task<UnlikeCommentResult> Handle(UnlikeCommentCommand command, CancellationToken cancellationToken = default)
+    public async Task<UnlikeCommentCommandResponse> Handle(UnlikeCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var like = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
-        if (like is null) return UnlikeCommentResult.NotFound;
+        if (like is null) return UnlikeCommentCommandResponse.NotFound;
 
         await commentRepository.DeleteLikeAsync(like, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return UnlikeCommentResult.Success;
+        return UnlikeCommentCommandResponse.Success;
     }
 }

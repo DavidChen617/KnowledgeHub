@@ -10,7 +10,7 @@ public sealed class NoteGraphEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/graph", HandleAsync)
-            .Produces<NoteGraphResponse>(StatusCodes.Status200OK)
+            .Produces<GetNoteGraphQueryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
@@ -21,7 +21,7 @@ public sealed class NoteGraphEndpoint : IGroupedEndpoint<NotesGroup>
     {
         if (currentUser is null) return Results.Unauthorized();
 
-        var result = await dispatcher.Send(new GetNoteGraphQuery(currentUser.Id), ct);
+        var result = await dispatcher.Send(new GetNoteGraphQueryRequest(currentUser.Id), ct);
         return Results.Ok(result);
     }
 }

@@ -6,35 +6,35 @@ using Domain.Users;
 
 namespace Application.Comments;
 
-public record AddCommentCommand(
+public record AddCommentCommandRequest(
     NoteId NoteId,
     UserId UserId,
     string Content,
     CommentId? ParentCommentId,
-    string? ShareToken) : IRequest<AddCommentResult>;
+    string? ShareToken) : IRequest<AddCommentCommandResponse>;
 
-public enum AddCommentResult { Success, NotFound, Forbidden }
+public enum AddCommentCommandResponse { Success, NotFound, Forbidden }
 
 public class AddCommentHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<AddCommentCommand, AddCommentResult>
+    : IRequestHandler<AddCommentCommandRequest, AddCommentCommandResponse>
 {
-    public async Task<AddCommentResult> Handle(AddCommentCommand command, CancellationToken cancellationToken = default)
+    public async Task<AddCommentCommandResponse> Handle(AddCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
-        if (note is null) return AddCommentResult.NotFound;
+        if (note is null) return AddCommentCommandResponse.NotFound;
 
         var isOwner = note.UserId == command.UserId;
         var hasShareAccess = command.ShareToken is not null && note.SharedLink?.Token == command.ShareToken;
 
-        if (!isOwner && !hasShareAccess) return AddCommentResult.Forbidden;
+        if (!isOwner && !hasShareAccess) return AddCommentCommandResponse.Forbidden;
 
         var comment = Comment.Create(command.NoteId, command.UserId, command.Content, command.ParentCommentId);
         await commentRepository.AddAsync(comment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return AddCommentResult.Success;
+        return AddCommentCommandResponse.Success;
     }
 }

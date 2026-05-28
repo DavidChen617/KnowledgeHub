@@ -5,12 +5,14 @@ using Domain.Users;
 
 namespace Application.Notes;
 
-public record CreateSharedLinkCommand(NoteId NoteId, UserId UserId, SharePermission Permission) : IRequest<string?>;
+public record CreateSharedLinkCommandRequest(NoteId NoteId, UserId UserId, SharePermission Permission) : IRequest<CreateSharedLinkCommandResponse?>;
+
+public record CreateSharedLinkCommandResponse(string Token);
 
 public class CreateSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<CreateSharedLinkCommand, string?>
+    : IRequestHandler<CreateSharedLinkCommandRequest, CreateSharedLinkCommandResponse?>
 {
-    public async Task<string?> Handle(CreateSharedLinkCommand command, CancellationToken cancellationToken = default)
+    public async Task<CreateSharedLinkCommandResponse?> Handle(CreateSharedLinkCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
         if (note is null) return null;
@@ -19,6 +21,6 @@ public class CreateSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return link.Token;
+        return new CreateSharedLinkCommandResponse(link.Token);
     }
 }

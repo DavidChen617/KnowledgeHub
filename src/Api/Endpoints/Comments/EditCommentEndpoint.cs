@@ -27,12 +27,12 @@ public sealed class EditCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(
-            new EditCommentCommand(new CommentId(id), currentUser.Id, req.Content), ct);
+            new EditCommentCommandRequest(new CommentId(id), currentUser.Id, req.Content), ct);
 
         return result switch
         {
-            EditCommentResult.Success => Results.NoContent(),
-            EditCommentResult.Forbidden => Results.Forbid(),
+            EditCommentCommandResponse.Success => Results.NoContent(),
+            EditCommentCommandResponse.Forbidden => Results.Forbid(),
             _ => Results.NotFound()
         };
     }

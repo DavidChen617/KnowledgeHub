@@ -25,12 +25,12 @@ public sealed class LikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
     {
         if (currentUser is null) return Results.Unauthorized();
 
-        var result = await dispatcher.Send(new LikeCommentCommand(new CommentId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new LikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
         return result switch
         {
-            LikeCommentResult.Success => Results.NoContent(),
-            LikeCommentResult.AlreadyLiked => Results.Conflict(),
+            LikeCommentCommandResponse.Success => Results.NoContent(),
+            LikeCommentCommandResponse.AlreadyLiked => Results.Conflict(),
             _ => Results.NotFound()
         };
     }

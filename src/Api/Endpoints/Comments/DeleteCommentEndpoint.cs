@@ -26,12 +26,12 @@ public sealed class DeleteCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(
-            new DeleteCommentCommand(new CommentId(id), currentUser.Id), ct);
+            new DeleteCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
         return result switch
         {
-            DeleteCommentResult.Success => Results.NoContent(),
-            DeleteCommentResult.Forbidden => Results.Forbid(),
+            DeleteCommentCommandResponse.Success => Results.NoContent(),
+            DeleteCommentCommandResponse.Forbidden => Results.Forbid(),
             _ => Results.NotFound()
         };
     }

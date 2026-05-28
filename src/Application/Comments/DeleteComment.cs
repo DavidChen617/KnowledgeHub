@@ -5,22 +5,22 @@ using Domain.Users;
 
 namespace Application.Comments;
 
-public record DeleteCommentCommand(CommentId CommentId, UserId UserId) : IRequest<DeleteCommentResult>;
+public record DeleteCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<DeleteCommentCommandResponse>;
 
-public enum DeleteCommentResult { Success, NotFound, Forbidden }
+public enum DeleteCommentCommandResponse { Success, NotFound, Forbidden }
 
 public class DeleteCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteCommentCommand, DeleteCommentResult>
+    : IRequestHandler<DeleteCommentCommandRequest, DeleteCommentCommandResponse>
 {
-    public async Task<DeleteCommentResult> Handle(DeleteCommentCommand command, CancellationToken cancellationToken = default)
+    public async Task<DeleteCommentCommandResponse> Handle(DeleteCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
-        if (comment is null) return DeleteCommentResult.NotFound;
-        if (comment.UserId != command.UserId) return DeleteCommentResult.Forbidden;
+        if (comment is null) return DeleteCommentCommandResponse.NotFound;
+        if (comment.UserId != command.UserId) return DeleteCommentCommandResponse.Forbidden;
 
         await commentRepository.DeleteAsync(comment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return DeleteCommentResult.Success;
+        return DeleteCommentCommandResponse.Success;
     }
 }

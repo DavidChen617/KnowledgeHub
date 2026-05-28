@@ -5,24 +5,24 @@ using Domain.Users;
 
 namespace Application.Comments;
 
-public record LikeCommentCommand(CommentId CommentId, UserId UserId) : IRequest<LikeCommentResult>;
+public record LikeCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<LikeCommentCommandResponse>;
 
-public enum LikeCommentResult { Success, NotFound, AlreadyLiked }
+public enum LikeCommentCommandResponse { Success, NotFound, AlreadyLiked }
 
 public class LikeCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<LikeCommentCommand, LikeCommentResult>
+    : IRequestHandler<LikeCommentCommandRequest, LikeCommentCommandResponse>
 {
-    public async Task<LikeCommentResult> Handle(LikeCommentCommand command, CancellationToken cancellationToken = default)
+    public async Task<LikeCommentCommandResponse> Handle(LikeCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
-        if (comment is null) return LikeCommentResult.NotFound;
+        if (comment is null) return LikeCommentCommandResponse.NotFound;
 
         var existing = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
-        if (existing is not null) return LikeCommentResult.AlreadyLiked;
+        if (existing is not null) return LikeCommentCommandResponse.AlreadyLiked;
 
         await commentRepository.AddLikeAsync(CommentLike.Create(command.CommentId, command.UserId), cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return LikeCommentResult.Success;
+        return LikeCommentCommandResponse.Success;
     }
 }

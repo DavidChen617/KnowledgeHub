@@ -3,9 +3,9 @@ using Domain.Notes;
 
 namespace Application.Notes;
 
-public record GetNoteByTokenQuery(string Token) : IRequest<SharedNoteResponse?>;
+public record GetNoteByTokenQueryRequest(string Token) : IRequest<GetNoteByTokenQueryResponse?>;
 
-public record SharedNoteResponse(
+public record GetNoteByTokenQueryResponse(
     Guid NoteId,
     string Title,
     string Content,
@@ -16,14 +16,14 @@ public record SharedNoteResponse(
     SharePermission Permission);
 
 public class GetNoteByTokenHandler(INoteRepository noteRepository)
-    : IRequestHandler<GetNoteByTokenQuery, SharedNoteResponse?>
+    : IRequestHandler<GetNoteByTokenQueryRequest, GetNoteByTokenQueryResponse?>
 {
-    public async Task<SharedNoteResponse?> Handle(GetNoteByTokenQuery query, CancellationToken cancellationToken = default)
+    public async Task<GetNoteByTokenQueryResponse?> Handle(GetNoteByTokenQueryRequest query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetBySharedTokenAsync(query.Token, cancellationToken);
         if (note is null) return null;
 
-        return new SharedNoteResponse(
+        return new GetNoteByTokenQueryResponse(
             note.Id.Value,
             note.Title,
             note.Content,

@@ -9,7 +9,7 @@ public sealed class GetSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{token}", HandleAsync)
-            .Produces<SharedNoteResponse>(StatusCodes.Status200OK)
+            .Produces<GetNoteByTokenQueryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
     }
 
@@ -18,7 +18,7 @@ public sealed class GetSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var note = await dispatcher.Send(new GetNoteByTokenQuery(token), ct);
+        var note = await dispatcher.Send(new GetNoteByTokenQueryRequest(token), ct);
         return note is null ? Results.NotFound() : Results.Ok(note);
     }
 }

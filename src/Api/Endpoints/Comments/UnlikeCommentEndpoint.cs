@@ -24,7 +24,7 @@ public sealed class UnlikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
     {
         if (currentUser is null) return Results.Unauthorized();
 
-        var result = await dispatcher.Send(new UnlikeCommentCommand(new CommentId(id), currentUser.Id), ct);
-        return result == UnlikeCommentResult.Success ? Results.NoContent() : Results.NotFound();
+        var result = await dispatcher.Send(new UnlikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
+        return result == UnlikeCommentCommandResponse.Success ? Results.NoContent() : Results.NotFound();
     }
 }

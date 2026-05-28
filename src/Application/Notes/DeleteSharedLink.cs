@@ -5,20 +5,22 @@ using Domain.Users;
 
 namespace Application.Notes;
 
-public record DeleteSharedLinkCommand(NoteId NoteId, UserId UserId) : IRequest<bool>;
+public record DeleteSharedLinkCommandRequest(NoteId NoteId, UserId UserId) : IRequest<DeleteSharedLinkCommandResponse>;
+
+public enum DeleteSharedLinkCommandResponse { Success, NotFound }
 
 public class DeleteSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteSharedLinkCommand, bool>
+    : IRequestHandler<DeleteSharedLinkCommandRequest, DeleteSharedLinkCommandResponse>
 {
-    public async Task<bool> Handle(DeleteSharedLinkCommand command, CancellationToken cancellationToken = default)
+    public async Task<DeleteSharedLinkCommandResponse> Handle(DeleteSharedLinkCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
-        if (note is null) return false;
+        if (note is null) return DeleteSharedLinkCommandResponse.NotFound;
 
         note.DeleteSharedLink();
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return DeleteSharedLinkCommandResponse.Success;
     }
 }

@@ -5,7 +5,7 @@ using Domain.Users;
 
 namespace Application.Comments;
 
-public record GetCommentsQuery(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<GetCommentsResponse?>;
+public record GetCommentsQueryRequest(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<GetCommentsQueryResponse?>;
 
 public record CommentResponse(
     Guid CommentId,
@@ -18,15 +18,15 @@ public record CommentResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt);
 
-public record GetCommentsResponse(IReadOnlyList<CommentResponse> Comments);
+public record GetCommentsQueryResponse(IReadOnlyList<CommentResponse> Comments);
 
 public class GetCommentsHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUserRepository userRepository)
-    : IRequestHandler<GetCommentsQuery, GetCommentsResponse?>
+    : IRequestHandler<GetCommentsQueryRequest, GetCommentsQueryResponse?>
 {
-    public async Task<GetCommentsResponse?> Handle(GetCommentsQuery query, CancellationToken cancellationToken = default)
+    public async Task<GetCommentsQueryResponse?> Handle(GetCommentsQueryRequest query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(query.NoteId, cancellationToken);
         if (note is null) return null;
@@ -59,6 +59,6 @@ public class GetCommentsHandler(
                 c.UpdatedAt);
         }).ToList();
 
-        return new GetCommentsResponse(response);
+        return new GetCommentsQueryResponse(response);
     }
 }

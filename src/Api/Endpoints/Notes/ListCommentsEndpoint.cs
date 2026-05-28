@@ -11,7 +11,7 @@ public sealed class ListCommentsEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{id:guid}/comments", HandleAsync)
-            .Produces<GetCommentsResponse>(StatusCodes.Status200OK)
+            .Produces<GetCommentsQueryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
@@ -25,7 +25,7 @@ public sealed class ListCommentsEndpoint : IGroupedEndpoint<NotesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(
-            new GetCommentsQuery(new NoteId(id), currentUser.Id, null), ct);
+            new GetCommentsQueryRequest(new NoteId(id), currentUser.Id, null), ct);
 
         return result is null ? Results.NotFound() : Results.Ok(result);
     }

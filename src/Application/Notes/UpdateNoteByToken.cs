@@ -4,25 +4,25 @@ using Domain.Shared;
 
 namespace Application.Notes;
 
-public record UpdateNoteByTokenCommand(string Token, string Content) : IRequest<UpdateNoteByTokenResult>;
+public record UpdateNoteByTokenCommandRequest(string Token, string Content) : IRequest<UpdateNoteByTokenCommandResponse>;
 
-public enum UpdateNoteByTokenResult { Success, NotFound, Forbidden }
+public enum UpdateNoteByTokenCommandResponse { Success, NotFound, Forbidden }
 
 public class UpdateNoteByTokenHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateNoteByTokenCommand, UpdateNoteByTokenResult>
+    : IRequestHandler<UpdateNoteByTokenCommandRequest, UpdateNoteByTokenCommandResponse>
 {
-    public async Task<UpdateNoteByTokenResult> Handle(UpdateNoteByTokenCommand command, CancellationToken cancellationToken = default)
+    public async Task<UpdateNoteByTokenCommandResponse> Handle(UpdateNoteByTokenCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetBySharedTokenAsync(command.Token, cancellationToken);
-        if (note is null) return UpdateNoteByTokenResult.NotFound;
+        if (note is null) return UpdateNoteByTokenCommandResponse.NotFound;
 
         if (note.SharedLink!.Permission != SharePermission.ReadWrite)
-            return UpdateNoteByTokenResult.Forbidden;
+            return UpdateNoteByTokenCommandResponse.Forbidden;
 
         note.UpdateContent(command.Content);
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return UpdateNoteByTokenResult.Success;
+        return UpdateNoteByTokenCommandResponse.Success;
     }
 }

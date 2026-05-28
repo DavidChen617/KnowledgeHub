@@ -34,12 +34,12 @@ public sealed class AddSharedCommentEndpoint : IGroupedEndpoint<ShareGroup>
 
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(
-            new AddCommentCommand(note.Id, currentUser.Id, req.Content, parentId, token), ct);
+            new AddCommentCommandRequest(note.Id, currentUser.Id, req.Content, parentId, token), ct);
 
         return result switch
         {
-            AddCommentResult.Success => Results.NoContent(),
-            AddCommentResult.Forbidden => Results.Forbid(),
+            AddCommentCommandResponse.Success => Results.NoContent(),
+            AddCommentCommandResponse.Forbidden => Results.Forbid(),
             _ => Results.NotFound()
         };
     }

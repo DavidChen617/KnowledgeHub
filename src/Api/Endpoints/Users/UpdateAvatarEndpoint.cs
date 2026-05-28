@@ -32,7 +32,7 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         var avatarUrl = $"{baseUrl}/image/{storageKey}";
 
-        await dispatcher.Send(new UpdateAvatarCommand(currentUser.Id, avatarUrl), ct);
+        await dispatcher.Send(new UpdateAvatarCommandRequest(currentUser.Id, avatarUrl), ct);
 
         return Results.Ok(new UpdateAvatarResponse(avatarUrl));
     }

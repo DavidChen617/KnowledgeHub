@@ -10,7 +10,7 @@ public sealed class ListSharedCommentsEndpoint : IGroupedEndpoint<ShareGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{token}/comments", HandleAsync)
-            .Produces<GetCommentsResponse>(StatusCodes.Status200OK)
+            .Produces<GetCommentsQueryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
     }
 
@@ -24,7 +24,7 @@ public sealed class ListSharedCommentsEndpoint : IGroupedEndpoint<ShareGroup>
         if (note is null) return Results.NotFound();
 
         var result = await dispatcher.Send(
-            new GetCommentsQuery(note.Id, null, token), ct);
+            new GetCommentsQueryRequest(note.Id, null, token), ct);
 
         return result is null ? Results.NotFound() : Results.Ok(result);
     }
