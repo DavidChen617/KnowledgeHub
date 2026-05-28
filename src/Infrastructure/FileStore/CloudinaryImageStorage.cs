@@ -9,6 +9,19 @@ internal sealed class CloudinaryImageStorage(
     CloudinaryDotNet.Cloudinary cloudinary,
     ILogger<CloudinaryImageStorage> logger) : IImageStorage
 {
+    public async Task<string> UploadAsync(Stream stream, string fileName, CancellationToken ct = default)
+    {
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(fileName, stream),
+            UseFilename = true,
+            UniqueFilename = true,
+            Overwrite = false
+        };
+        var result = await cloudinary.UploadAsync(uploadParams);
+        return result.PublicId;
+    }
+
     public async Task DeleteAsync(string publicUrl, CancellationToken ct = default)
     {
         var publicId = ExtractPublicId(publicUrl);
@@ -29,22 +42,24 @@ internal sealed class CloudinaryImageStorage(
         await Task.WhenAll(tasks);
     }
 
-    // https://res.cloudinary.com/{cloud}/image/upload/v123/{folder/public_id}.png
-    // → folder/public_id
+    // Handles two formats:
+    // 1. Our proxy URL:  https://domain/image/{publicId}
+    // 2. Cloudinary URL: https://res.cloudinary.com/{cloud}/image/upload/v123/{publicId}.ext
     private static string? ExtractPublicId(string url)
     {
-        const string marker = "/upload/";
-        var uploadIndex = url.IndexOf(marker, StringComparison.Ordinal);
-        if (uploadIndex < 0) return null;
+        const string uploadMarker = "/upload/";
+        var uploadIndex = url.IndexOf(uploadMarker, StringComparison.Ordinal);
+        if (uploadIndex >= 0)
+        {
+            var afterUpload = url[(uploadIndex + uploadMarker.Length)..];
+            if (afterUpload.StartsWith('v') && afterUpload.Contains('/'))
+                afterUpload = afterUpload[(afterUpload.IndexOf('/') + 1)..];
+            var dotIndex = afterUpload.LastIndexOf('.');
+            return dotIndex > 0 ? afterUpload[..dotIndex] : afterUpload;
+        }
 
-        var afterUpload = url[(uploadIndex + marker.Length)..];
-
-        // 跳過版本號 v1234567/
-        if (afterUpload.StartsWith('v') && afterUpload.Contains('/'))
-            afterUpload = afterUpload[(afterUpload.IndexOf('/') + 1)..];
-
-        // 移除副檔名
-        var dotIndex = afterUpload.LastIndexOf('.');
-        return dotIndex > 0 ? afterUpload[..dotIndex] : afterUpload;
+        const string imageMarker = "/image/";
+        var imageIndex = url.IndexOf(imageMarker, StringComparison.Ordinal);
+        return imageIndex >= 0 ? url[(imageIndex + imageMarker.Length)..] : null;
     }
 }
