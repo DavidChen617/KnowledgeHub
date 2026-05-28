@@ -79,10 +79,10 @@ builder.Services.AddInfrastructure(builder.Configuration, typeof(NoteDeletedEven
 var app = builder.Build();
 
 app.MapOpenApi();
-app.MapEndpoints();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapEndpoints();
 
 app.Run();

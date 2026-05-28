@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Google Login Test</title></head>
+<body>
+<div id="g_id_onload"
+     data-client_id="209656738111-nmrckhnb43jtkssh09c3dria0kneebop.apps.googleusercontent.com"
+     data-callback="onLogin"
+     data-auto_prompt="false">
+</div>
+<div class="g_id_signin" data-type="standard"></div>
+
+<pre id="token" style="word-break:break-all"></pre>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    function onLogin(response) {
+        document.getElementById('token').textContent = response.credential;
+    }
+</script>
+</body>
+</html>
