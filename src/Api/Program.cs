@@ -54,6 +54,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (user is null) { ctx.Fail("User not found"); return; }
 
                 ctx.HttpContext.Items["CurrentUser"] = user;
+            },
+            OnChallenge = async ctx =>
+            {
+                ctx.HandleResponse();
+                ctx.Response.StatusCode = 401;
+                ctx.Response.ContentType = "application/json";
+                await ctx.Response.WriteAsJsonAsync(new { error = "unauthorized" });
             }
         };
     });
