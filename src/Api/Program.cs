@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Text;
 using Api.Endpoints.Notes;
-using Application.Auth;
 using Application.EventHandlers;
 using Application.Notes;
 using CoreMesh.Dispatching.Extensions;
