@@ -8,7 +8,6 @@ using Domain.Categories;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
-using Domain.Users;
 using Infrastructure.Auth;
 using Infrastructure.FileStore;
 using Infrastructure.Embedding;

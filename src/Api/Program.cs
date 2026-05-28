@@ -66,10 +66,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddScoped(sp =>
+builder.Services.AddScoped<User>(sp =>
 {
     var ctx = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
-    return ctx?.Items["CurrentUser"] as User;
+    return (ctx?.Items["CurrentUser"] as User)!;
 });
 
 builder.Services.AddDispatching([typeof(AddNoteHandler).Assembly]);
