@@ -118,4 +118,7 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
         Task.FromResult<IReadOnlyList<Note>>([]);
 
     public Task DeleteAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task<Note?> GetBySharedTokenAsync(string token, CancellationToken ct = default) =>
+        Task.FromResult<Note?>(null);
 }
