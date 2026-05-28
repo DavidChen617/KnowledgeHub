@@ -8,6 +8,6 @@ public sealed class ShareGroup : IGroupEndpoint
 
     public void Configure(RouteGroupBuilder group)
     {
-        group.WithTags("Share").AllowAnonymous();
+        group.WithTags("NoteShare").AllowAnonymous();
     }
 }

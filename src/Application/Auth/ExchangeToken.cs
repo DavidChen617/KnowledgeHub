@@ -1,16 +1,18 @@
 using CoreMesh.Dispatching.Abstractions;
+using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 
 namespace Application.Auth;
 
-public record ExchangeTokenCommandRequest(string ExternalToken) : IRequest<TokenResponse?>;
+public record ExchangeTokenCommandRequest(string ExternalToken, string BaseUrl) : IRequest<TokenResponse?>;
 
 public record TokenResponse(string AccessToken, string RefreshToken, int ExpiresIn);
 
 public class ExchangeTokenHandler(
     IIdentityProvider identityProvider,
     IUserRepository userRepository,
+    IImageStorage imageStorage,
     ITokenIssuer tokenIssuer,
     IUnitOfWork unitOfWork) : IRequestHandler<ExchangeTokenCommandRequest, TokenResponse?>
 {
@@ -19,13 +21,15 @@ public class ExchangeTokenHandler(
         var identity = await identityProvider.ValidateAsync(command.ExternalToken, ct);
         if (identity is null) return null;
 
+        var avatarUrl = await ResolveAvatarUrlAsync(identity.AvatarUrl, command.BaseUrl, ct);
+
         var userIdentity = await userRepository.FindIdentityAsync(
             identityProvider.ProviderName, identity.Sub, ct);
 
         User user;
         if (userIdentity is null)
         {
-            user = User.Create(identity.Email, identity.Name, identity.AvatarUrl);
+            user = User.Create(identity.Email, identity.Name, avatarUrl);
             await userRepository.AddAsync(user, ct);
             await userRepository.AddIdentityAsync(
                 UserIdentity.Create(user.Id, identityProvider.ProviderName, identity.Sub), ct);
@@ -33,7 +37,7 @@ public class ExchangeTokenHandler(
         else
         {
             user = (await userRepository.GetByIdAsync(userIdentity.UserId, ct))!;
-            user.UpdateAvatar(identity.AvatarUrl);
+            user.UpdateAvatar(avatarUrl);
         }
 
         var refreshData = tokenIssuer.GenerateRefreshToken();
@@ -46,5 +50,12 @@ public class ExchangeTokenHandler(
 
         var issued = tokenIssuer.IssueAccessToken(user.Id);
         return new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn);
+    }
+
+    private async Task<string?> ResolveAvatarUrlAsync(string? externalUrl, string baseUrl, CancellationToken ct)
+    {
+        if (externalUrl is null) return null;
+        var storageKey = await imageStorage.UploadFromUrlAsync(externalUrl, ct);
+        return $"{baseUrl}/image/{storageKey}";
     }
 }

@@ -22,6 +22,18 @@ internal sealed class CloudinaryImageStorage(
         return result.PublicId;
     }
 
+    public async Task<string> UploadFromUrlAsync(string url, CancellationToken ct = default)
+    {
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(url),
+            UniqueFilename = true,
+            Overwrite = false
+        };
+        var result = await cloudinary.UploadAsync(uploadParams);
+        return result.PublicId;
+    }
+
     public async Task DeleteAsync(string publicUrl, CancellationToken ct = default)
     {
         var publicId = ExtractPublicId(publicUrl);

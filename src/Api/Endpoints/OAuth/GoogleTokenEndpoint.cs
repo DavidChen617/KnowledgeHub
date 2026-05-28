@@ -15,10 +15,12 @@ public sealed class GoogleTokenEndpoint : IGroupedEndpoint<OAuthGroup>
 
     private static async Task<IResult> HandleAsync(
         GoogleTokenRequest req,
+        HttpContext ctx,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new ExchangeTokenCommandRequest(req.IdToken), ct);
+        var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
+        var result = await dispatcher.Send(new ExchangeTokenCommandRequest(req.IdToken, baseUrl), ct);
         return result is null ? Results.Unauthorized() : Results.Ok(result);
     }
 }
