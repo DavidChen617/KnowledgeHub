@@ -43,6 +43,13 @@ internal sealed class NoteRepository(AppDbContext db) : INoteRepository
             .ToListAsync(ct);
     }
 
+    public async Task<Note?> GetBySharedTokenAsync(string token, CancellationToken ct = default)
+    {
+        return await db.Notes
+            .Include(n => n.Images)
+            .FirstOrDefaultAsync(n => n.SharedLink != null && n.SharedLink.Token == token, ct);
+    }
+
     public Task UpdateAsync(Note note, CancellationToken ct = default)
     {
         return Task.CompletedTask;

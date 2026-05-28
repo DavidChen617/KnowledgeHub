@@ -1,0 +1,36 @@
+using Application.Notes;
+using CoreMesh.Dispatching.Abstractions;
+using CoreMesh.Endpoints;
+using Domain.Notes;
+using Domain.Users;
+
+namespace Api.Endpoints.Notes;
+
+public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
+{
+    public void AddRoute(RouteGroupBuilder group)
+    {
+        group.MapPost("/{id:guid}/share", HandleAsync)
+            .Produces<CreateSharedLinkResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+    }
+
+    private static async Task<IResult> HandleAsync(
+        Guid id,
+        User? currentUser,
+        HttpContext ctx,
+        IDispatcher dispatcher,
+        CancellationToken ct)
+    {
+        if (currentUser is null) return Results.Unauthorized();
+
+        var token = await dispatcher.Send(new CreateSharedLinkCommand(new NoteId(id), currentUser.Id), ct);
+        if (token is null) return Results.NotFound();
+
+        var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
+        return Results.Ok(new CreateSharedLinkResponse($"{baseUrl}/share/{token}"));
+    }
+}
+
+public record CreateSharedLinkResponse(string Url);

@@ -73,6 +73,12 @@ public class Note : AggregateRoot<NoteId>
         return SharedLink;
     }
 
+    public void DeleteSharedLink()
+    {
+        SharedLink = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void Delete()
     {
         var imageUrls = _images.Select(img => img.PublicUrl).ToList();
