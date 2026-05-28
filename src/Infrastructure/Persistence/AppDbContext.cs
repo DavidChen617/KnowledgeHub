@@ -1,5 +1,6 @@
 using CoreMesh.Outbox.Abstractions;
 using Domain.Categories;
+using Domain.Comments;
 using Domain.Notes;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Note> Notes => Set<Note>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

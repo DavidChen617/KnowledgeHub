@@ -5,6 +5,7 @@ using Confluent.Kafka;
 using CoreMesh.Outbox.Extensions;
 using Domain.AI;
 using Domain.Categories;
+using Domain.Comments;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
@@ -35,6 +36,7 @@ public static class Dependency
 
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<INoteSearcher, NoteSearcher>();
