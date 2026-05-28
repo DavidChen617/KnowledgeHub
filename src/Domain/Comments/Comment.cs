@@ -1,11 +1,17 @@
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Domain.Comments;
 
 public class Comment : AggregateRoot<CommentId>
 {
+    public static class Errors
+    {
+        public static readonly Error EmptyContent = new("Comment.EmptyContent", "Content cannot be empty", ErrorType.Validation);
+    }
+
     public NoteId NoteId { get; }
     public UserId UserId { get; }
     public CommentId? ParentCommentId { get; }
@@ -24,12 +30,17 @@ public class Comment : AggregateRoot<CommentId>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public static Comment Create(NoteId noteId, UserId userId, string content, CommentId? parentCommentId = null) =>
-        new(CommentId.New(), noteId, userId, parentCommentId, content);
-
-    public void UpdateContent(string content)
+    public static Result<Comment> Create(NoteId noteId, UserId userId, string content, CommentId? parentCommentId = null)
     {
+        if (string.IsNullOrWhiteSpace(content)) return Errors.EmptyContent;
+        return Result.Success(new Comment(CommentId.New(), noteId, userId, parentCommentId, content));
+    }
+
+    public Result UpdateContent(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return Errors.EmptyContent;
         Content = content;
         UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 }

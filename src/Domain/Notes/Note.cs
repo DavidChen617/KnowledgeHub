@@ -2,11 +2,18 @@ using Domain.Categories;
 using Domain.Notes.Events;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Domain.Notes;
 
 public class Note : AggregateRoot<NoteId>
 {
+    public static class Errors
+    {
+        public static readonly Error EmptyTitle  = new("Note.EmptyTitle",  "Title cannot be empty",   ErrorType.Validation);
+        public static readonly Error EmptyContent = new("Note.EmptyContent", "Content cannot be empty", ErrorType.Validation);
+    }
+
     private readonly List<NoteId> _linkedNoteIds = [];
     private readonly List<NoteStructure> _structures = [];
     private readonly List<NoteImage> _images = [];
@@ -30,26 +37,32 @@ public class Note : AggregateRoot<NoteId>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public static Note Create(UserId userId, string title, string content = "")
+    public static Result<Note> Create(UserId userId, string title, string content = "")
     {
+        if (string.IsNullOrWhiteSpace(title)) return Errors.EmptyTitle;
+
         var note = new Note(NoteId.New(), userId, title, content);
         note.SyncLinks();
         note.SyncImages();
-        return note;
+        return Result.Success(note);
     }
 
-    public void UpdateContent(string content)
+    public Result UpdateContent(string content)
     {
         Content = content;
         UpdatedAt = DateTime.UtcNow;
         SyncLinks();
         SyncImages();
+        return Result.Success();
     }
 
-    public void UpdateTitle(string title)
+    public Result UpdateTitle(string title)
     {
+        if (string.IsNullOrWhiteSpace(title)) return Errors.EmptyTitle;
+
         Title = title;
         UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 
     public void SetCategory(CategoryId? categoryId)

@@ -23,7 +23,10 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
             return NoteErrors.NotFound;
 
         if (command.Title is not null)
-            note.UpdateTitle(command.Title);
+        {
+            var r = note.UpdateTitle(command.Title);
+            if (!r.IsSuccess) return r.Error;
+        }
 
         if (command.Content is not null)
             note.UpdateContent(command.Content);

@@ -77,7 +77,9 @@ public class StructureNoteTests
             相關範例可以看 [[{refId2}]] 的 repository pattern 筆記。
             """;
 
-        var note = Note.Create(UserId.New(), "Dependency Injection 筆記", initialContent);
+        var noteResult = Note.Create(UserId.New(), "Dependency Injection 筆記", initialContent);
+        Assert.True(noteResult.IsSuccess);
+        var note = noteResult.Value;
 
         // NoteParser 自動解析 [[uuid]] 連結
         Assert.Equal(2, note.LinkedNoteIds.Count);

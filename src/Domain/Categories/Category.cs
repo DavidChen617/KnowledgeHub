@@ -1,10 +1,16 @@
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Domain.Categories;
 
 public class Category : AggregateRoot<CategoryId>
 {
+    public static class Errors
+    {
+        public static readonly Error EmptyName = new("Category.EmptyName", "Name cannot be empty", ErrorType.Validation);
+    }
+
     public UserId UserId { get; }
     public string Name { get; private set; }
 
@@ -14,8 +20,16 @@ public class Category : AggregateRoot<CategoryId>
         Name = name;
     }
 
-    public static Category Create(UserId userId, string name) =>
-        new(CategoryId.New(), userId, name);
+    public static Result<Category> Create(UserId userId, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return Errors.EmptyName;
+        return Result.Success(new Category(CategoryId.New(), userId, name));
+    }
 
-    public void Rename(string name) => Name = name;
+    public Result Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return Errors.EmptyName;
+        Name = name;
+        return Result.Success();
+    }
 }

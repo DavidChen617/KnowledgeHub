@@ -17,7 +17,10 @@ public class AddNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWo
 {
     public async Task<Result<AddNoteCommandResponse>> Handle(AddNoteCommandRequest command, CancellationToken cancellationToken = default)
     {
-        var note = Note.Create(command.UserId, command.Title, command.Content);
+        var noteResult = Note.Create(command.UserId, command.Title, command.Content);
+        if (!noteResult.IsSuccess) return noteResult.Error;
+
+        var note = noteResult.Value;
 
         if (command.CategoryId is not null)
             note.SetCategory(command.CategoryId);

@@ -17,7 +17,9 @@ public class EditCommentHandler(ICommentRepository commentRepository, IUnitOfWor
         if (comment is null) return CommentErrors.NotFound;
         if (comment.UserId != command.UserId) return CommentErrors.Forbidden;
 
-        comment.UpdateContent(command.Content);
+        var editResult = comment.UpdateContent(command.Content);
+        if (!editResult.IsSuccess) return editResult.Error;
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

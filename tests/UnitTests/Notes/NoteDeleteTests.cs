@@ -21,7 +21,9 @@ public class NoteDeleteTests
             """;
 
         var userId = UserId.New();
-        var note = Note.Create(userId, "系統設計筆記", content);
+        var noteResult = Note.Create(userId, "系統設計筆記", content);
+        Assert.True(noteResult.IsSuccess);
+        var note = noteResult.Value;
 
         Assert.Equal(2, note.Images.Count);
         Assert.All(note.Images, img => Assert.True(img.Enable));
@@ -44,16 +46,16 @@ public class NoteDeleteTests
         Assert.Equal("https://res.cloudinary.com/test/image/upload/v1/flow.png", disabledImage.PublicUrl);
         Console.WriteLine($"[2] 移除圖片：{disabledImage.PublicUrl}，NoteImagesChangedEvent 觸發");
 
-        // --- 3. 使用者非擁有者，handler 回傳 null ---
+        // --- 3. 使用者非擁有者，handler 回傳 NotFound ---
         var wrongUserRepo = new FakeNoteRepository(returnNote: null);
         var handler = new DeleteNoteHandler(wrongUserRepo, FakeUnitOfWork.Instance);
         var wrongUserCommand = new DeleteNoteCommandRequest(note.Id, UserId.New());
 
         var notFoundResult = await handler.Handle(wrongUserCommand);
 
-        Assert.Null(notFoundResult);
+        Assert.False(notFoundResult.IsSuccess);
         Assert.False(wrongUserRepo.WasDeleted);
-        Console.WriteLine($"[3] 非擁有者刪除：回傳 null，未執行刪除");
+        Console.WriteLine($"[3] 非擁有者刪除：回傳 NotFound，未執行刪除");
 
         // --- 4. 擁有者刪除，觸發 NoteDeletedEvent ---
         var ownerRepo = new FakeNoteRepository(returnNote: note);
@@ -62,7 +64,7 @@ public class NoteDeleteTests
 
         var result = await handler.Handle(deleteCommand);
 
-        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
         Assert.True(ownerRepo.WasDeleted);
         Assert.Same(note, ownerRepo.DeletedNote);
 

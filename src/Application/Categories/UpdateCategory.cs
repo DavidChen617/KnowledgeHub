@@ -25,7 +25,9 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
         if (existing.Any(c => c.Id != command.CategoryId.Value && string.Equals(c.Name, command.Name, StringComparison.OrdinalIgnoreCase)))
             return CategoryErrors.DuplicateName;
 
-        category.Rename(command.Name);
+        var renameResult = category.Rename(command.Name);
+        if (!renameResult.IsSuccess) return renameResult.Error;
+
         await categoryRepository.UpdateAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -31,8 +31,10 @@ public class AddCommentHandler(
 
         if (!isOwner && !hasShareAccess) return NoteErrors.Forbidden;
 
-        var comment = Comment.Create(command.NoteId, command.UserId, command.Content, command.ParentCommentId);
-        await commentRepository.AddAsync(comment, cancellationToken);
+        var commentResult = Comment.Create(command.NoteId, command.UserId, command.Content, command.ParentCommentId);
+        if (!commentResult.IsSuccess) return commentResult.Error;
+
+        await commentRepository.AddAsync(commentResult.Value, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

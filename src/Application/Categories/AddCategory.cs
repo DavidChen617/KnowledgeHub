@@ -21,7 +21,10 @@ public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfW
         if (existing.Any(c => string.Equals(c.Name, command.Name, StringComparison.OrdinalIgnoreCase)))
             return CategoryErrors.DuplicateName;
 
-        var category = Category.Create(command.UserId, command.Name);
+        var categoryResult = Category.Create(command.UserId, command.Name);
+        if (!categoryResult.IsSuccess) return categoryResult.Error;
+
+        var category = categoryResult.Value;
 
         await categoryRepository.AddAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

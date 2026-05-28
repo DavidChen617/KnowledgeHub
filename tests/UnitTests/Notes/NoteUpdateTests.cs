@@ -17,11 +17,13 @@ public class NoteUpdateTests
         var userId = UserId.New();
 
         // --- 1. 建立筆記（含連結與圖片）---
-        var note = Note.Create(userId, "原始標題", $"""
+        var created = Note.Create(userId, "原始標題", $"""
             學習筆記，參考 [[{refId}]]
             ![圖解]({imageUrl})
             """);
 
+        Assert.True(created.IsSuccess);
+        var note = created.Value;
         Assert.Equal("原始標題", note.Title);
         Assert.Single(note.LinkedNoteIds);
         Assert.Single(note.Images);
