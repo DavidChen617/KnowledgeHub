@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pgvector;
 using DAI = Domain.AI;
@@ -23,7 +24,13 @@ internal sealed class EmbeddingConfiguration : IEntityTypeConfiguration<DAI.Embe
             .HasComment("對應的 Chunk ID（1:1）");
 
         builder.Property(e => e.Vector)
-            .HasConversion(v => new Vector(v), v => v.ToArray())
+            .HasConversion(
+                v => new Vector(v),
+                v => v.ToArray(),
+                new ValueComparer<float[]>(
+                    (a, b) => a != null && b != null && a.SequenceEqual(b),
+                    v => v.Aggregate(0, (h, e) => HashCode.Combine(h, e.GetHashCode())),
+                    v => v.ToArray()))
             .HasColumnType("vector(1536)")
             .HasColumnName("vector")
             .IsRequired()

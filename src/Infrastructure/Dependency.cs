@@ -1,9 +1,15 @@
 using System.Net.Http.Headers;
+using System.Reflection;
+using Confluent.Kafka;
+using CoreMesh.Outbox.Extensions;
 using Domain.AI;
 using Domain.Categories;
 using Domain.Notes;
 using Domain.Shared;
+using Infrastructure.Cloudinary;
 using Infrastructure.Embedding;
+using Infrastructure.Messaging;
+using Infrastructure.Messaging.Kafka;
 using Infrastructure.NoteStructure;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
@@ -19,7 +25,7 @@ public static class Dependency
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddInfrastructure(IConfiguration configuration)
+        public IServiceCollection AddInfrastructure(IConfiguration configuration, params Assembly[] handlerAssemblies)
         {
             services.AddSingleton<DomainEventInterceptor>();
 
@@ -27,6 +33,7 @@ public static class Dependency
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<INoteSearcher, NoteSearcher>();
+            services.AddScoped<IImageStorage, CloudinaryImageStorage>();
 
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
@@ -34,6 +41,37 @@ public static class Dependency
                     o => o.UseVector());
                 options.AddInterceptors(sp.GetRequiredService<DomainEventInterceptor>());
             });
+
+            var bootstrapServers = configuration["Kafka:BootstrapServers"]!;
+            var groupId = configuration["Kafka:GroupId"] ?? "knowledge-hub";
+            
+            services.AddSingleton<IProducer<string, string>>(_ =>
+                new ProducerBuilder<string, string>(new ProducerConfig
+                {
+                    BootstrapServers = bootstrapServers,
+                    Acks = Acks.All
+                }).Build());
+
+            services.AddSingleton<IConsumer<string, string>>(_ =>
+                new ConsumerBuilder<string, string>(new ConsumerConfig
+                {
+                    BootstrapServers = bootstrapServers,
+                    GroupId = groupId,
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnableAutoCommit = false
+                }).Build());
+
+            services.AddHostedService<KafkaTopicInitializer>();
+
+            services.AddCoreMeshOutbox(
+                [.. handlerAssemblies, typeof(Domain.Notes.Events.NoteDeletedEvent).Assembly],
+                options =>
+                {
+                    options.AddOutboxStore<EfCoreOutboxStore>()
+                           .AddOutboxWriter<EfCoreOutboxWriter>()
+                           .AddMessageQueue<KafkaEventPublisher, KafkaMessageSubscriber>()
+                           .WithConsumer();
+                });
 
             services.AddHttpClient<INoteStructurer, GroqNoteStructurer>(client =>
             {
