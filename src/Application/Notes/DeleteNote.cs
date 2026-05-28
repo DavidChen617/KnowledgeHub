@@ -3,6 +3,8 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -16,12 +18,12 @@ public class DeleteNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
 
         if (note is null)
-            return NoteErrors.NotFound;
+            return NotFound;
 
         note.Delete();
         await noteRepository.DeleteAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

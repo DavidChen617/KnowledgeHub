@@ -1,6 +1,8 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -22,9 +24,9 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository)
     public async Task<Result<GetNoteByTokenQueryResponse>> Handle(GetNoteByTokenQueryRequest query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetBySharedTokenAsync(query.Token, cancellationToken);
-        if (note is null) return NoteErrors.TokenNotFound;
+        if (note is null) return TokenNotFound;
 
-        return Result.Success(new GetNoteByTokenQueryResponse(
+        return Success(new GetNoteByTokenQueryResponse(
             note.Id.Value,
             note.Title,
             note.Content,

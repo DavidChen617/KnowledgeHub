@@ -3,6 +3,8 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -16,12 +18,13 @@ public class CreateSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork
     public async Task<Result<CreateSharedLinkCommandResponse>> Handle(CreateSharedLinkCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
-        if (note is null) return NoteErrors.NotFound;
+        if (note is null) 
+            return NotFound;
 
         var link = note.CreateSharedLink(command.Permission);
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new CreateSharedLinkCommandResponse(link.Token));
+        return Success(new CreateSharedLinkCommandResponse(link.Token));
     }
 }

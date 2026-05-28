@@ -3,6 +3,8 @@ using Domain.Categories;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Categories.CategoryErrors;
+using static ShareKernal.Result;
 
 namespace Application.Categories;
 
@@ -17,14 +19,14 @@ public class DeleteCategoryHandler(ICategoryRepository categoryRepository, IUnit
         var category = await categoryRepository.GetByIdAndUserIdAsync(command.CategoryId, command.UserId, cancellationToken);
 
         if (category is null)
-            return CategoryErrors.NotFound;
+            return NotFound;
 
         if (await categoryRepository.IsInUseAsync(command.CategoryId, cancellationToken))
-            return CategoryErrors.InUse;
+            return InUse;
 
         await categoryRepository.DeleteAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

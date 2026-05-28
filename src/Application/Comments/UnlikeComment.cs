@@ -3,6 +3,8 @@ using Domain.Comments;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Comments.CommentErrors;
+using static ShareKernal.Result;
 
 namespace Application.Comments;
 
@@ -14,11 +16,11 @@ public class UnlikeCommentHandler(ICommentRepository commentRepository, IUnitOfW
     public async Task<Result> Handle(UnlikeCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var like = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
-        if (like is null) return CommentErrors.NotFound;
+        if (like is null) return NotFound;
 
         await commentRepository.DeleteLikeAsync(like, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

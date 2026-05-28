@@ -4,6 +4,7 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -28,6 +29,6 @@ public class AddNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWo
         await noteRepository.AddAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new AddNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
+        return Success(new AddNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
     }
 }

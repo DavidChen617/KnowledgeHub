@@ -2,6 +2,7 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Users;
 using ShareKernal;
+using static ShareKernal.Result;
 
 namespace Application.Categories;
 
@@ -17,6 +18,6 @@ public class ListCategoriesHandler(ICategoryRepository categoryRepository)
     {
         var categories = await categoryRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
 
-        return Result.Success(new ListCategoriesQueryResponse(categories));
+        return Success(new ListCategoriesQueryResponse(categories));
     }
 }

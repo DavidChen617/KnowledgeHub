@@ -3,6 +3,8 @@ using Domain.Comments;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Comments.CommentErrors;
+using static ShareKernal.Result;
 
 namespace Application.Comments;
 
@@ -14,14 +16,14 @@ public class LikeCommentHandler(ICommentRepository commentRepository, IUnitOfWor
     public async Task<Result> Handle(LikeCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
-        if (comment is null) return CommentErrors.NotFound;
+        if (comment is null) return NotFound;
 
         var existing = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
-        if (existing is not null) return CommentErrors.AlreadyLiked;
+        if (existing is not null) return AlreadyLiked;
 
         await commentRepository.AddLikeAsync(CommentLike.Create(command.CommentId, command.UserId), cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

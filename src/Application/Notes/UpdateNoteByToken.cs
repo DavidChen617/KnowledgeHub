@@ -2,6 +2,8 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
 using Domain.Shared;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -13,15 +15,15 @@ public class UpdateNoteByTokenHandler(INoteRepository noteRepository, IUnitOfWor
     public async Task<Result> Handle(UpdateNoteByTokenCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetBySharedTokenAsync(command.Token, cancellationToken);
-        if (note is null) return NoteErrors.TokenNotFound;
+        if (note is null) return TokenNotFound;
 
         if (note.SharedLink!.Permission != SharePermission.ReadWrite)
-            return NoteErrors.ReadOnly;
+            return ReadOnly;
 
         note.UpdateContent(command.Content);
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

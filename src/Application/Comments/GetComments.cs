@@ -1,9 +1,10 @@
-using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Comments;
 using Domain.Notes;
 using Domain.Users;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Comments;
 
@@ -31,12 +32,12 @@ public class GetCommentsHandler(
     public async Task<Result<GetCommentsQueryResponse>> Handle(GetCommentsQueryRequest query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(query.NoteId, cancellationToken);
-        if (note is null) return NoteErrors.NotFound;
+        if (note is null) return NotFound;
 
         var isOwner = query.UserId is not null && note.UserId == query.UserId;
         var hasShareAccess = query.ShareToken is not null && note.SharedLink?.Token == query.ShareToken;
 
-        if (!isOwner && !hasShareAccess) return NoteErrors.Forbidden;
+        if (!isOwner && !hasShareAccess) return Forbidden;
 
         var comments = await commentRepository.GetByNoteIdAsync(query.NoteId, cancellationToken);
 
@@ -61,6 +62,6 @@ public class GetCommentsHandler(
                 c.UpdatedAt);
         }).ToList();
 
-        return Result.Success(new GetCommentsQueryResponse(response));
+        return Success(new GetCommentsQueryResponse(response));
     }
 }

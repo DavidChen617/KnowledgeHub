@@ -2,6 +2,8 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Users.UserErrors;
+using static ShareKernal.Result;
 
 namespace Application.Users;
 
@@ -13,12 +15,12 @@ public class UpdateAvatarHandler(IUserRepository userRepository, IUnitOfWork uni
     public async Task<Result> Handle(UpdateAvatarCommandRequest command, CancellationToken cancellationToken = default)
     {
         var user = await userRepository.GetByIdAsync(command.UserId, cancellationToken);
-        if (user is null) return UserErrors.NotFound;
+        if (user is null) return NotFound;
 
         user.UpdateAvatar(command.AvatarUrl);
         await userRepository.UpdateAsync(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success();
+        return Success();
     }
 }

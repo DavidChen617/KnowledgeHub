@@ -3,6 +3,8 @@ using Domain.Categories;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Categories.CategoryErrors;
+using static ShareKernal.Result;
 
 namespace Application.Categories;
 
@@ -19,11 +21,11 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
         var category = await categoryRepository.GetByIdAndUserIdAsync(command.CategoryId, command.UserId, cancellationToken);
 
         if (category is null)
-            return CategoryErrors.NotFound;
+            return NotFound;
 
         var existing = await categoryRepository.GetAllByUserIdAsync(command.UserId, cancellationToken);
         if (existing.Any(c => c.Id != command.CategoryId.Value && string.Equals(c.Name, command.Name, StringComparison.OrdinalIgnoreCase)))
-            return CategoryErrors.DuplicateName;
+            return DuplicateName;
 
         var renameResult = category.Rename(command.Name);
         if (!renameResult.IsSuccess) return renameResult.Error;
@@ -31,6 +33,6 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
         await categoryRepository.UpdateAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new UpdateCategoryCommandResponse(category.Id.Value, category.Name));
+        return Success(new UpdateCategoryCommandResponse(category.Id.Value, category.Name));
     }
 }

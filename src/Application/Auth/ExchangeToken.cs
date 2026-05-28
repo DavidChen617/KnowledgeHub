@@ -3,6 +3,8 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Auth.AuthErrors;
+using static ShareKernal.Result;
 
 namespace Application.Auth;
 
@@ -20,7 +22,7 @@ public class ExchangeTokenHandler(
     public async Task<Result<TokenResponse>> Handle(ExchangeTokenCommandRequest command, CancellationToken ct)
     {
         var identity = await identityProvider.ValidateAsync(command.ExternalToken, ct);
-        if (identity is null) return AuthErrors.InvalidToken;
+        if (identity is null) return InvalidToken;
 
         var userIdentity = await userRepository.FindIdentityAsync(
             identityProvider.ProviderName, identity.Sub, ct);
@@ -48,7 +50,7 @@ public class ExchangeTokenHandler(
         await unitOfWork.SaveChangesAsync(ct);
 
         var issued = tokenIssuer.IssueAccessToken(user.Id);
-        return Result.Success(new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn));
+        return Success(new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn));
     }
 
     private async Task<string?> ResolveAvatarUrlAsync(string? externalUrl, string baseUrl, CancellationToken ct)

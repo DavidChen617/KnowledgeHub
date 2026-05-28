@@ -2,6 +2,8 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Auth.AuthErrors;
+using static ShareKernal.Result;
 
 namespace Application.Auth;
 
@@ -16,7 +18,7 @@ public class RenewTokenHandler(
     {
         var hash = TokenHasher.Hash(command.RawRefreshToken);
         var existing = await userRepository.FindRefreshTokenByHashAsync(hash, ct);
-        if (existing is null || !existing.IsValid) return AuthErrors.InvalidToken;
+        if (existing is null || !existing.IsValid) return InvalidToken;
 
         existing.Revoke();
 
@@ -29,6 +31,6 @@ public class RenewTokenHandler(
         await unitOfWork.SaveChangesAsync(ct);
 
         var issued = tokenIssuer.IssueAccessToken(existing.UserId);
-        return Result.Success(new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn));
+        return Success(new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn));
     }
 }

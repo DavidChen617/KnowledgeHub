@@ -3,6 +3,8 @@ using Domain.AI;
 using Domain.Notes;
 using Domain.Shared;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -18,8 +20,8 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
 
         if (note is null)
-            return NoteErrors.NotFound;
-        
+            return NotFound;
+
         var result = await structurer.StructureAsync(note.Content, command.Prompt, cancellationToken);
         var chunks = Chunker.Chunk(result.StructuredContent, HeadingMapper);
         var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description, chunks);
@@ -33,7 +35,7 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
+        return Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
     }
 
     private static IReadOnlyList<(int, string)> HeadingMapper(string content)

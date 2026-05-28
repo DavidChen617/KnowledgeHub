@@ -4,6 +4,8 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
+using static Application.Notes.NoteErrors;
+using static ShareKernal.Result;
 
 namespace Application.Notes;
 
@@ -20,7 +22,7 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
 
         if (note is null)
-            return NoteErrors.NotFound;
+            return NotFound;
 
         if (command.Title is not null)
         {
@@ -37,6 +39,6 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
+        return Success(new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
     }
 }
