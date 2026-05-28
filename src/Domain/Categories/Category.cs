@@ -4,6 +4,14 @@ using ShareKernal;
 
 namespace Domain.Categories;
 
+public sealed class CategoryId : ValueObject
+{
+    public Guid Value { get; }
+    public CategoryId(Guid value) => Value = value;
+    public static CategoryId New() => new(Guid.NewGuid());
+    protected override IEnumerable<object> GetEqualityComponents() { yield return Value; }
+}
+
 public class Category : AggregateRoot<CategoryId>
 {
     public static class Errors
