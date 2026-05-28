@@ -28,7 +28,7 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new AddNoteCommandRequest(userId, req.Title, req.Content ?? string.Empty, categoryId), ct);
 
-        return Results.Created($"/api/notes/{result.NoteId.Value}", result);
+        return Results.Created($"/api/notes/{result.NoteId}", result);
     }
 }
 

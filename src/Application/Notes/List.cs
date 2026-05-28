@@ -8,7 +8,7 @@ public record ListQueryRequest(UserId UserId) : IRequest<ListQueryResponse>;
 
 public record ListQueryResponse(IReadOnlyList<NoteSummary> Notes);
 
-public record NoteSummary(NoteId NoteId, string Title, DateTime UpdatedAt);
+public record NoteSummary(Guid NoteId, string Title, DateTime UpdatedAt);
 
 public class ListHandler(INoteRepository noteRepository)
     : IRequestHandler<ListQueryRequest, ListQueryResponse>
@@ -18,7 +18,7 @@ public class ListHandler(INoteRepository noteRepository)
         var notes = await noteRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
 
         var summaries = notes
-            .Select(n => new NoteSummary(n.Id, n.Title, n.UpdatedAt))
+            .Select(n => new NoteSummary(n.Id.Value, n.Title, n.UpdatedAt))
             .ToList();
 
         return new ListQueryResponse(summaries);

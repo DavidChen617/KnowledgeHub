@@ -28,7 +28,7 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
         try
         {
             var result = await dispatcher.Send(new AddCategoryCommandRequest(userId, req.Name), ct);
-            return Results.Created($"/api/categories/{result.CategoryId.Value}", result);
+            return Results.Created($"/api/categories/{result.CategoryId}", result);
         }
         catch (DuplicateCategoryNameException ex)
         {

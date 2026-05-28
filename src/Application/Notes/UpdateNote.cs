@@ -9,7 +9,7 @@ namespace Application.Notes;
 public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, CategoryId? CategoryId)
     : IRequest<UpdateNoteCommandResponse>;
 
-public record UpdateNoteCommandResponse(NoteId NoteId, string Title, string Content, CategoryId? CategoryId, DateTime UpdatedAt);
+public record UpdateNoteCommandResponse(Guid NoteId, string Title, string Content, Guid? CategoryId, DateTime UpdatedAt);
 
 public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<UpdateNoteCommandRequest, UpdateNoteCommandResponse?>
@@ -33,6 +33,6 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new UpdateNoteCommandResponse(note.Id, note.Title, note.Content, note.CategoryId, note.UpdatedAt);
+        return new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt);
     }
 }

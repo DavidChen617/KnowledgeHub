@@ -9,7 +9,7 @@ namespace Application.Categories;
 public record UpdateCategoryCommandRequest(CategoryId CategoryId, UserId UserId, string Name)
     : IRequest<UpdateCategoryCommandResponse>;
 
-public record UpdateCategoryCommandResponse(CategoryId CategoryId, string Name);
+public record UpdateCategoryCommandResponse(Guid CategoryId, string Name);
 
 public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<UpdateCategoryCommandRequest, UpdateCategoryCommandResponse?>
@@ -22,13 +22,13 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
             return null;
 
         var existing = await categoryRepository.GetAllByUserIdAsync(command.UserId, cancellationToken);
-        if (existing.Any(c => c.Id != command.CategoryId && string.Equals(c.Name, command.Name, StringComparison.OrdinalIgnoreCase)))
+        if (existing.Any(c => c.Id != command.CategoryId.Value && string.Equals(c.Name, command.Name, StringComparison.OrdinalIgnoreCase)))
             throw new DuplicateCategoryNameException(command.Name);
 
         category.Rename(command.Name);
         await categoryRepository.UpdateAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new UpdateCategoryCommandResponse(category.Id, category.Name);
+        return new UpdateCategoryCommandResponse(category.Id.Value, category.Name);
     }
 }

@@ -9,7 +9,7 @@ namespace Application.Categories;
 public record AddCategoryCommandRequest(UserId UserId, string Name)
     : IRequest<AddCategoryCommandResponse>;
 
-public record AddCategoryCommandResponse(CategoryId CategoryId, string Name);
+public record AddCategoryCommandResponse(Guid CategoryId, string Name);
 
 public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
     : IRequestHandler<AddCategoryCommandRequest, AddCategoryCommandResponse>
@@ -26,6 +26,6 @@ public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfW
         await categoryRepository.AddAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new AddCategoryCommandResponse(category.Id, category.Name);
+        return new AddCategoryCommandResponse(category.Id.Value, category.Name);
     }
 }

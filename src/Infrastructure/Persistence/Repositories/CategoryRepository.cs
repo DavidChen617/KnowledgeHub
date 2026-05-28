@@ -17,7 +17,7 @@ internal sealed class CategoryRepository(AppDbContext db) : ICategoryRepository
             .Where(c => c.UserId == userId)
             .OrderBy(c => c.Name)
             .Select(c => new CategorySummary(
-                c.Id,
+                c.Id.Value,
                 c.Name,
                 db.Notes.Count(n => n.CategoryId == c.Id)))
             .ToListAsync(ct);

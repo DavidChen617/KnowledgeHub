@@ -12,4 +12,4 @@ public interface ICategoryRepository
     Task DeleteAsync(Category category, CancellationToken ct = default);
 }
 
-public record CategorySummary(CategoryId Id, string Name, int NoteCount);
+public record CategorySummary(Guid Id, string Name, int NoteCount);
