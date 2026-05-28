@@ -75,7 +75,8 @@ public class Note : AggregateRoot<NoteId>
 
     public void Delete()
     {
-        RaiseDomainEvent(new NoteDeletedEvent(Id));
+        var imageUrls = _images.Select(img => img.PublicUrl).ToList();
+        RaiseDomainEvent(new NoteDeletedEvent(Id, imageUrls));
     }
 
     private void SyncLinks()
@@ -88,9 +89,6 @@ public class Note : AggregateRoot<NoteId>
             _linkedNoteIds.Remove(id);
 
         _linkedNoteIds.AddRange(diff.ToAdd);
-
-        if (diff.ToAdd.Count > 0 || diff.ToRemove.Count > 0)
-            RaiseDomainEvent(new NoteLinksChangedEvent(Id, diff.ToAdd, diff.ToRemove));
     }
 
     private void SyncImages()
@@ -106,6 +104,6 @@ public class Note : AggregateRoot<NoteId>
             _images.Add(NoteImage.Create(Id, url));
 
         if (toDisable.Count > 0)
-            RaiseDomainEvent(new NoteImagesChangedEvent(Id));
+            RaiseDomainEvent(new NoteImagesChangedEvent(Id, toDisable.Select(img => img.PublicUrl).ToList()));
     }
 }
