@@ -1,7 +1,7 @@
-using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
+using Domain.Users;
 
 namespace Api.Endpoints.Notes;
 
@@ -16,14 +16,13 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         string q,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
-        var result = await dispatcher.Send(new SearchQueryRequest(userId, q), ct);
+        var result = await dispatcher.Send(new SearchQueryRequest(currentUser.Id, q), ct);
 
         return Results.Ok(result);
     }

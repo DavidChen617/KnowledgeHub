@@ -1,8 +1,8 @@
-using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Notes;
+using Domain.Users;
 
 namespace Api.Endpoints.Notes;
 
@@ -19,12 +19,11 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         StructureNoteRequest req,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(
             new StructureNoteCommandRequest(new NoteId(id), req.Prompt), ct);

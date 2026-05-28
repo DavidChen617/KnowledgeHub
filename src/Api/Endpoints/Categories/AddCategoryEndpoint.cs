@@ -1,8 +1,8 @@
-using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Exceptions;
+using Domain.Users;
 
 namespace Api.Endpoints.Categories;
 
@@ -18,16 +18,15 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 
     private static async Task<IResult> HandleAsync(
         AddCategoryRequest req,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         try
         {
-            var result = await dispatcher.Send(new AddCategoryCommandRequest(userId, req.Name), ct);
+            var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
             return Results.Created($"/api/categories/{result.CategoryId}", result);
         }
         catch (DuplicateCategoryNameException ex)

@@ -1,7 +1,7 @@
-using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
+using Domain.Users;
 
 namespace Api.Endpoints.Notes;
 
@@ -15,14 +15,13 @@ public sealed class ListNotesEndpoint : IGroupedEndpoint<NotesGroup>
     }
 
     private static async Task<IResult> HandleAsync(
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
-        var result = await dispatcher.Send(new ListQueryRequest(userId), ct);
+        var result = await dispatcher.Send(new ListQueryRequest(currentUser.Id), ct);
 
         return Results.Ok(result);
     }

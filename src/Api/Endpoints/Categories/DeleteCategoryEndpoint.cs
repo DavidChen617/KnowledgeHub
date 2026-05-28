@@ -1,9 +1,9 @@
-using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Categories;
 using Domain.Exceptions;
+using Domain.Users;
 
 namespace Api.Endpoints.Categories;
 
@@ -20,16 +20,15 @@ public sealed class DeleteCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         try
         {
-            var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), userId), ct);
+            var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), currentUser.Id), ct);
             return result is null ? Results.NotFound() : Results.NoContent();
         }
         catch (CategoryInUseException ex)

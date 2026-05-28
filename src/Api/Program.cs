@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Api.Endpoints.Notes;
 using Application.Auth;
@@ -5,6 +6,7 @@ using Application.EventHandlers;
 using Application.Notes;
 using CoreMesh.Dispatching.Extensions;
 using CoreMesh.Endpoints.Extensions;
+using Domain.Users;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -29,6 +31,7 @@ builder.Services.AddOpenApi(options =>
 });
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -40,9 +43,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ClockSkew = TimeSpan.Zero
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async ctx =>
+            {
+                var sub = ctx.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(sub, out var guid)) { ctx.Fail("Invalid sub"); return; }
+
+                var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                var user = await repo.GetByIdAsync(new UserId(guid));
+                if (user is null) { ctx.Fail("User not found"); return; }
+
+                ctx.HttpContext.Items["CurrentUser"] = user;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddScoped(sp =>
+{
+    var ctx = sp.GetRequiredService<IHttpContextAccessor>().HttpContext;
+    return ctx?.Items["CurrentUser"] as User;
+});
 
 builder.Services.AddDispatching([typeof(AddNoteHandler).Assembly]);
 builder.Services.AddEndpoints([typeof(NotesGroup).Assembly]);

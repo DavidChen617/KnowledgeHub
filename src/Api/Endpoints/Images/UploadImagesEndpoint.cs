@@ -1,7 +1,7 @@
-using Api.Extensions;
 using Application.Images;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
+using Domain.Users;
 
 namespace Api.Endpoints.Images;
 
@@ -17,12 +17,12 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
 
     private static async Task<IResult> HandleAsync(
         IFormFileCollection files,
-        IDispatcher dispatcher,
+        User? currentUser,
         HttpContext ctx,
+        IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out _))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         if (files.Count == 0)
             return Results.BadRequest("No files provided.");

@@ -1,8 +1,8 @@
-using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Categories;
+using Domain.Users;
 
 namespace Api.Endpoints.Notes;
 
@@ -15,18 +15,18 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
-    private static async Task<IResult> HandleAsync(AddNoteRequest req,
+    private static async Task<IResult> HandleAsync(
+        AddNoteRequest req,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
         var result = await dispatcher.Send(
-            new AddNoteCommandRequest(userId, req.Title, req.Content ?? string.Empty, categoryId), ct);
+            new AddNoteCommandRequest(currentUser.Id, req.Title, req.Content ?? string.Empty, categoryId), ct);
 
         return Results.Created($"/api/notes/{result.NoteId}", result);
     }

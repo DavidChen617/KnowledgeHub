@@ -1,8 +1,8 @@
-using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Notes;
+using Domain.Users;
 
 namespace Api.Endpoints.Notes;
 
@@ -18,15 +18,14 @@ public sealed class DeleteNoteEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
+        User? currentUser,
         IDispatcher dispatcher,
-        HttpContext ctx,
         CancellationToken ct)
     {
-        if (!ctx.TryGetUserId(out var userId))
-            return Results.Unauthorized();
+        if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(
-            new DeleteNoteCommandRequest(new NoteId(id), userId), ct);
+            new DeleteNoteCommandRequest(new NoteId(id), currentUser.Id), ct);
 
         return result is null ? Results.NotFound() : Results.NoContent();
     }
