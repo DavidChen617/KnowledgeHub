@@ -27,11 +27,7 @@ public sealed class LikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
 
         var result = await dispatcher.Send(new LikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
-        return result switch
-        {
-            LikeCommentCommandResponse.Success => Results.NoContent(),
-            LikeCommentCommandResponse.AlreadyLiked => Results.Conflict(),
-            _ => Results.NotFound()
-        };
+        if (result.IsSuccess) return Results.NoContent();
+        return result.Error.Type == ShareKernal.ErrorType.Conflict ? Results.Conflict() : Results.NotFound();
     }
 }

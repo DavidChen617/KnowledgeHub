@@ -30,12 +30,8 @@ public sealed class AddCommentEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new AddCommentCommandRequest(new NoteId(id), currentUser.Id, req.Content, parentId, null), ct);
 
-        return result switch
-        {
-            AddCommentCommandResponse.Success => Results.NoContent(),
-            AddCommentCommandResponse.Forbidden => Results.Forbid(),
-            _ => Results.NotFound()
-        };
+        if (result.IsSuccess) return Results.NoContent();
+        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
     }
 }
 

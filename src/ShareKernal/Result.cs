@@ -1,12 +1,13 @@
 namespace ShareKernal;
 
-public record Error(string Code, string Description)
+public enum ErrorType { NotFound, Forbidden, Conflict, Validation }
+
+public record Error(string Code, string Description, ErrorType Type = ErrorType.Validation)
 {
-    public static readonly Error None = new (string.Empty, string.Empty);
+    public static readonly Error None = new(string.Empty, string.Empty);
+    public static readonly Error NullValue = new("Error.NullValue", "Null value was provided", ErrorType.NotFound);
 
     public static implicit operator Result(Error error) => Result.Failure(error);
-
-    public static readonly Error NullValue = new("Error.NullValue", "Null value was provide");
 }
 
 public class Result
@@ -44,4 +45,6 @@ public class Result<TValue> : Result
 
     public static implicit operator Result<TValue>(TValue? value) =>
         value is not null ? Success(value) : Failure<TValue>(Error.NullValue);
+
+    public static implicit operator Result<TValue>(Error error) => Failure<TValue>(error);
 }

@@ -3,23 +3,24 @@ using Domain.Categories;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Application.Notes;
 
 public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, CategoryId? CategoryId)
-    : IRequest<UpdateNoteCommandResponse>;
+    : IRequest<Result<UpdateNoteCommandResponse>>;
 
 public record UpdateNoteCommandResponse(Guid NoteId, string Title, string Content, Guid? CategoryId, DateTime UpdatedAt);
 
 public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateNoteCommandRequest, UpdateNoteCommandResponse?>
+    : IRequestHandler<UpdateNoteCommandRequest, Result<UpdateNoteCommandResponse>>
 {
-    public async Task<UpdateNoteCommandResponse?> Handle(UpdateNoteCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result<UpdateNoteCommandResponse>> Handle(UpdateNoteCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
 
         if (note is null)
-            return null;
+            return NoteErrors.NotFound;
 
         if (command.Title is not null)
             note.UpdateTitle(command.Title);
@@ -33,6 +34,6 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt);
+        return Result.Success(new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
     }
 }

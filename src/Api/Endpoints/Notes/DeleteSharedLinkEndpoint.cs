@@ -25,6 +25,6 @@ public sealed class DeleteSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(new DeleteSharedLinkCommandRequest(new NoteId(id), currentUser.Id), ct);
-        return result == DeleteSharedLinkCommandResponse.Success ? Results.NoContent() : Results.NotFound();
+        return result.IsSuccess ? Results.NoContent() : Results.NotFound();
     }
 }

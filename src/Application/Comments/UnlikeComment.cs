@@ -2,24 +2,23 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Comments;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Application.Comments;
 
-public record UnlikeCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<UnlikeCommentCommandResponse>;
-
-public enum UnlikeCommentCommandResponse { Success, NotFound }
+public record UnlikeCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<Result>;
 
 public class UnlikeCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UnlikeCommentCommandRequest, UnlikeCommentCommandResponse>
+    : IRequestHandler<UnlikeCommentCommandRequest, Result>
 {
-    public async Task<UnlikeCommentCommandResponse> Handle(UnlikeCommentCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(UnlikeCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var like = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
-        if (like is null) return UnlikeCommentCommandResponse.NotFound;
+        if (like is null) return CommentErrors.NotFound;
 
         await commentRepository.DeleteLikeAsync(like, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return UnlikeCommentCommandResponse.Success;
+        return Result.Success();
     }
 }

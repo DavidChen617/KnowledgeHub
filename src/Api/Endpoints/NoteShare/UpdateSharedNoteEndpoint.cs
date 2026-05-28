@@ -24,12 +24,8 @@ public sealed class UpdateSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
     {
         var result = await dispatcher.Send(new UpdateNoteByTokenCommandRequest(token, req.Content), ct);
 
-        return result switch
-        {
-            UpdateNoteByTokenCommandResponse.Success => Results.NoContent(),
-            UpdateNoteByTokenCommandResponse.Forbidden => Results.Forbid(),
-            _ => Results.NotFound()
-        };
+        if (result.IsSuccess) return Results.NoContent();
+        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
     }
 }
 

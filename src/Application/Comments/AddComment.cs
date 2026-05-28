@@ -1,8 +1,10 @@
+using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Comments;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Application.Comments;
 
@@ -11,30 +13,28 @@ public record AddCommentCommandRequest(
     UserId UserId,
     string Content,
     CommentId? ParentCommentId,
-    string? ShareToken) : IRequest<AddCommentCommandResponse>;
-
-public enum AddCommentCommandResponse { Success, NotFound, Forbidden }
+    string? ShareToken) : IRequest<Result>;
 
 public class AddCommentHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<AddCommentCommandRequest, AddCommentCommandResponse>
+    : IRequestHandler<AddCommentCommandRequest, Result>
 {
-    public async Task<AddCommentCommandResponse> Handle(AddCommentCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(AddCommentCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
-        if (note is null) return AddCommentCommandResponse.NotFound;
+        if (note is null) return NoteErrors.NotFound;
 
         var isOwner = note.UserId == command.UserId;
         var hasShareAccess = command.ShareToken is not null && note.SharedLink?.Token == command.ShareToken;
 
-        if (!isOwner && !hasShareAccess) return AddCommentCommandResponse.Forbidden;
+        if (!isOwner && !hasShareAccess) return NoteErrors.Forbidden;
 
         var comment = Comment.Create(command.NoteId, command.UserId, command.Content, command.ParentCommentId);
         await commentRepository.AddAsync(comment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return AddCommentCommandResponse.Success;
+        return Result.Success();
     }
 }

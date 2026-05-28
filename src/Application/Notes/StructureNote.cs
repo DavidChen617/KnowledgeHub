@@ -2,22 +2,23 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.AI;
 using Domain.Notes;
 using Domain.Shared;
+using ShareKernal;
 
 namespace Application.Notes;
 
-public record StructureNoteCommandRequest(NoteId NoteId, string Prompt) : IRequest<StructureNoteCommandResponse>;
+public record StructureNoteCommandRequest(NoteId NoteId, string Prompt) : IRequest<Result<StructureNoteCommandResponse>>;
 
 public record StructureNoteCommandResponse(Guid StructureId, string Description, string Content);
 
 public class StructureNoteHandler(INoteRepository noteRepository, INoteStructurer structurer, IEmbedder embedder, IUnitOfWork unitOfWork)
-    : IRequestHandler<StructureNoteCommandRequest, StructureNoteCommandResponse?>
+    : IRequestHandler<StructureNoteCommandRequest, Result<StructureNoteCommandResponse>>
 {
-    public async Task<StructureNoteCommandResponse?> Handle(StructureNoteCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result<StructureNoteCommandResponse>> Handle(StructureNoteCommandRequest command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
-        
-        if(note is null)
-            return null;
+
+        if (note is null)
+            return NoteErrors.NotFound;
         
         var result = await structurer.StructureAsync(note.Content, command.Prompt, cancellationToken);
         var chunks = Chunker.Chunk(result.StructuredContent, HeadingMapper);
@@ -32,7 +33,7 @@ public class StructureNoteHandler(INoteRepository noteRepository, INoteStructure
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content);
+        return Result.Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
     }
 
     private static IReadOnlyList<(int, string)> HeadingMapper(string content)

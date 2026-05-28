@@ -28,11 +28,7 @@ public sealed class DeleteCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         var result = await dispatcher.Send(
             new DeleteCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
-        return result switch
-        {
-            DeleteCommentCommandResponse.Success => Results.NoContent(),
-            DeleteCommentCommandResponse.Forbidden => Results.Forbid(),
-            _ => Results.NotFound()
-        };
+        if (result.IsSuccess) return Results.NoContent();
+        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
     }
 }

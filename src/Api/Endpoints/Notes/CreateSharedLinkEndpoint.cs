@@ -28,10 +28,10 @@ public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
 
         var permission = req.Permission == "readwrite" ? SharePermission.ReadWrite : SharePermission.Read;
         var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id, permission), ct);
-        if (result is null) return Results.NotFound();
+        if (!result.IsSuccess) return Results.NotFound();
 
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
-        return Results.Ok(new CreateSharedLinkResponse($"{baseUrl}/share/{result.Token}", req.Permission));
+        return Results.Ok(new CreateSharedLinkResponse($"{baseUrl}/share/{result.Value.Token}", req.Permission));
     }
 }
 

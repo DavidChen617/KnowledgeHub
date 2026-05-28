@@ -29,12 +29,8 @@ public sealed class EditCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         var result = await dispatcher.Send(
             new EditCommentCommandRequest(new CommentId(id), currentUser.Id, req.Content), ct);
 
-        return result switch
-        {
-            EditCommentCommandResponse.Success => Results.NoContent(),
-            EditCommentCommandResponse.Forbidden => Results.Forbid(),
-            _ => Results.NotFound()
-        };
+        if (result.IsSuccess) return Results.NoContent();
+        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
     }
 }
 

@@ -3,6 +3,7 @@ using Domain.Notes;
 using Domain.Notes.Events;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace UnitTests.Notes;
 
@@ -34,9 +35,10 @@ public class NoteUpdateTests
 
         var notFoundResult = await handler.Handle(wrongCommand);
 
-        Assert.Null(notFoundResult);
+        Assert.False(notFoundResult.IsSuccess);
+        Assert.Equal(ErrorType.NotFound, notFoundResult.Error.Type);
         Assert.False(repo.WasUpdated);
-        Console.WriteLine($"[2] 非擁有者更新：回傳 null");
+        Console.WriteLine($"[2] 非擁有者更新：回傳 NotFound");
 
         // --- 3. 只更新標題 ---
         repo = new FakeNoteRepository(returnNote: note);
@@ -46,11 +48,11 @@ public class NoteUpdateTests
 
         var titleResult = await handler.Handle(titleCommand);
 
-        Assert.NotNull(titleResult);
-        Assert.Equal("新標題", titleResult.Title);
+        Assert.True(titleResult.IsSuccess);
+        Assert.Equal("新標題", titleResult.Value.Title);
         Assert.True(repo.WasUpdated);
         Assert.Equal(linkedCountBefore, note.LinkedNoteIds.Count);
-        Console.WriteLine($"[3] 只更新標題：{titleResult.Title}");
+        Console.WriteLine($"[3] 只更新標題：{titleResult.Value.Title}");
 
         // --- 4. 更新內容：移除圖片、移除連結 ---
         repo = new FakeNoteRepository(returnNote: note);
@@ -59,8 +61,8 @@ public class NoteUpdateTests
 
         var contentResult = await handler.Handle(contentCommand);
 
-        Assert.NotNull(contentResult);
-        Assert.Equal("重寫內容，不含圖片與連結", contentResult.Content);
+        Assert.True(contentResult.IsSuccess);
+        Assert.Equal("重寫內容，不含圖片與連結", contentResult.Value.Content);
 
         Assert.Empty(note.LinkedNoteIds);
 
@@ -77,10 +79,10 @@ public class NoteUpdateTests
 
         var bothResult = await handler.Handle(bothCommand);
 
-        Assert.NotNull(bothResult);
-        Assert.Equal("最終標題", bothResult.Title);
-        Assert.Equal("最終內容", bothResult.Content);
-        Console.WriteLine($"[5] 同時更新：標題={bothResult.Title}，內容={bothResult.Content}");
+        Assert.True(bothResult.IsSuccess);
+        Assert.Equal("最終標題", bothResult.Value.Title);
+        Assert.Equal("最終內容", bothResult.Value.Content);
+        Console.WriteLine($"[5] 同時更新：標題={bothResult.Value.Title}，內容={bothResult.Value.Content}");
     }
 }
 

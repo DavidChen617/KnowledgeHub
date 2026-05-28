@@ -2,10 +2,11 @@ using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace Application.Auth;
 
-public record ExchangeTokenCommandRequest(string ExternalToken, string BaseUrl) : IRequest<TokenResponse?>;
+public record ExchangeTokenCommandRequest(string ExternalToken, string BaseUrl) : IRequest<Result<TokenResponse>>;
 
 public record TokenResponse(string AccessToken, string RefreshToken, int ExpiresIn);
 
@@ -14,12 +15,12 @@ public class ExchangeTokenHandler(
     IUserRepository userRepository,
     IImageStorage imageStorage,
     ITokenIssuer tokenIssuer,
-    IUnitOfWork unitOfWork) : IRequestHandler<ExchangeTokenCommandRequest, TokenResponse?>
+    IUnitOfWork unitOfWork) : IRequestHandler<ExchangeTokenCommandRequest, Result<TokenResponse>>
 {
-    public async Task<TokenResponse?> Handle(ExchangeTokenCommandRequest command, CancellationToken ct)
+    public async Task<Result<TokenResponse>> Handle(ExchangeTokenCommandRequest command, CancellationToken ct)
     {
         var identity = await identityProvider.ValidateAsync(command.ExternalToken, ct);
-        if (identity is null) return null;
+        if (identity is null) return AuthErrors.InvalidToken;
 
         var userIdentity = await userRepository.FindIdentityAsync(
             identityProvider.ProviderName, identity.Sub, ct);
@@ -47,7 +48,7 @@ public class ExchangeTokenHandler(
         await unitOfWork.SaveChangesAsync(ct);
 
         var issued = tokenIssuer.IssueAccessToken(user.Id);
-        return new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn);
+        return Result.Success(new TokenResponse(issued.Value, refreshData.Raw, issued.ExpiresIn));
     }
 
     private async Task<string?> ResolveAvatarUrlAsync(string? externalUrl, string baseUrl, CancellationToken ct)

@@ -1,11 +1,13 @@
+using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Comments;
 using Domain.Notes;
 using Domain.Users;
+using ShareKernal;
 
 namespace Application.Comments;
 
-public record GetCommentsQueryRequest(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<GetCommentsQueryResponse?>;
+public record GetCommentsQueryRequest(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<Result<GetCommentsQueryResponse>>;
 
 public record CommentResponse(
     Guid CommentId,
@@ -24,17 +26,17 @@ public class GetCommentsHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUserRepository userRepository)
-    : IRequestHandler<GetCommentsQueryRequest, GetCommentsQueryResponse?>
+    : IRequestHandler<GetCommentsQueryRequest, Result<GetCommentsQueryResponse>>
 {
-    public async Task<GetCommentsQueryResponse?> Handle(GetCommentsQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetCommentsQueryResponse>> Handle(GetCommentsQueryRequest query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(query.NoteId, cancellationToken);
-        if (note is null) return null;
+        if (note is null) return NoteErrors.NotFound;
 
         var isOwner = query.UserId is not null && note.UserId == query.UserId;
         var hasShareAccess = query.ShareToken is not null && note.SharedLink?.Token == query.ShareToken;
 
-        if (!isOwner && !hasShareAccess) return null;
+        if (!isOwner && !hasShareAccess) return NoteErrors.Forbidden;
 
         var comments = await commentRepository.GetByNoteIdAsync(query.NoteId, cancellationToken);
 
@@ -59,6 +61,6 @@ public class GetCommentsHandler(
                 c.UpdatedAt);
         }).ToList();
 
-        return new GetCommentsQueryResponse(response);
+        return Result.Success(new GetCommentsQueryResponse(response));
     }
 }

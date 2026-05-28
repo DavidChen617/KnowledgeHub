@@ -24,15 +24,9 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
     {
         if (currentUser is null) return Results.Unauthorized();
 
-        try
-        {
-            var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
-            return Results.Created($"/api/categories/{result.CategoryId}", result);
-        }
-        catch (DuplicateCategoryNameException ex)
-        {
-            return Results.Conflict(new { error = ex.Message });
-        }
+        var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
+        if (!result.IsSuccess) return Results.Conflict(new { error = result.Error.Description });
+        return Results.Created($"/api/categories/{result.Value.CategoryId}", result.Value);
     }
 }
 
