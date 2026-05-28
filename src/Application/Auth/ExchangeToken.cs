@@ -21,14 +21,13 @@ public class ExchangeTokenHandler(
         var identity = await identityProvider.ValidateAsync(command.ExternalToken, ct);
         if (identity is null) return null;
 
-        var avatarUrl = await ResolveAvatarUrlAsync(identity.AvatarUrl, command.BaseUrl, ct);
-
         var userIdentity = await userRepository.FindIdentityAsync(
             identityProvider.ProviderName, identity.Sub, ct);
 
         User user;
         if (userIdentity is null)
         {
+            var avatarUrl = await ResolveAvatarUrlAsync(identity.AvatarUrl, command.BaseUrl, ct);
             user = User.Create(identity.Email, identity.Name, avatarUrl);
             await userRepository.AddAsync(user, ct);
             await userRepository.AddIdentityAsync(
@@ -37,7 +36,6 @@ public class ExchangeTokenHandler(
         else
         {
             user = (await userRepository.GetByIdAsync(userIdentity.UserId, ct))!;
-            user.UpdateAvatar(avatarUrl);
         }
 
         var refreshData = tokenIssuer.GenerateRefreshToken();
