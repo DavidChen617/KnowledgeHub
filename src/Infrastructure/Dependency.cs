@@ -88,7 +88,13 @@ public static class Dependency
                            .WithConsumer();
                 });
 
-            services.AddHttpClient<INoteStructurer, GroqNoteStructurer>(client =>
+            services.AddHttpClient<INoteStructurer, GeminiNoteStructurer>(client =>
+            {
+                client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1beta/");
+                client.DefaultRequestHeaders.Add("x-goog-api-key", configuration["Gemini:ApiKey"]!);
+            });
+            services.AddHttpClient("ImageDownloader");
+            services.AddHttpClient<GroqNoteStructurer>(client =>
             {
                 client.BaseAddress = new Uri("https://api.groq.com/openai/v1/");
                 client.DefaultRequestHeaders.Authorization =
