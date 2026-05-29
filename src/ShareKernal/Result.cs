@@ -17,8 +17,8 @@ public class Result
 
     protected internal Result(bool isSuccess, Error error)
     {
-        if (IsSuccess && error != Error.None ||
-            !IsSuccess && error == Error.None)
+        if (isSuccess && error != Error.None ||
+            !isSuccess && error == Error.None)
             throw new ArgumentException("One or more validation errors have been detected.");
 
         IsSuccess = isSuccess;
