@@ -1,13 +1,28 @@
 using System.Net.Http.Headers;
 using Domain.AI;
 using Domain.Notes;
-using Domain.Notes.Events;
 using Domain.Users;
 using Infrastructure.Embedding;
 using Infrastructure.NoteStructure;
 using Microsoft.Extensions.Configuration;
 
 namespace UnitTests.Notes;
+
+file class LoggingHandler : DelegatingHandler
+{
+    public LoggingHandler() : base(new HttpClientHandler()) { }
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+    {
+        Console.WriteLine($"[read_image] {request.RequestUri}");
+        return await base.SendAsync(request, ct);
+    }
+}
+
+file class SimpleHttpClientFactory : IHttpClientFactory
+{
+    public HttpClient CreateClient(string name) => new(new LoggingHandler());
+}
 
 [Trait("Category", "Integration")]
 public class StructureNoteTests
@@ -21,6 +36,13 @@ public class StructureNoteTests
         var client = new HttpClient { BaseAddress = new Uri("https://api.groq.com/openai/v1/") };
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", Config["Groq:ApiKey"]);
+        return client;
+    }
+
+    private static HttpClient GeminiClient()
+    {
+        var client = new HttpClient { BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1beta/") };
+        client.DefaultRequestHeaders.Add("x-goog-api-key", Config["Gemini:ApiKey"]);
         return client;
     }
 
@@ -143,5 +165,40 @@ public class StructureNoteTests
         Console.WriteLine($"\n[5] Embedding 結果：");
         foreach (var chunk in structure.Chunks)
             Console.WriteLine($"    Chunk[{chunk.Index}] 維度={chunk.Embedding!.Vector.Length}, 前3值=[{string.Join(", ", chunk.Embedding.Vector[..3].Select(v => v.ToString("F4")))}]");
+    }
+
+    [Fact]
+    public async Task Gemini_StructureNote_WithImages()
+    {
+        const string content = """
+            # 學習筆記：MVC 架構設計模式
+
+            今天在看 ASP.NET Core 的架構，順便複習了一下 MVC 的概念，把理解整理起來。
+
+            MVC 把應用程式分成三個部分，彼此職責分離，下面這張圖說明了三者的互動關係：
+
+            ![MVC 架構圖](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/MVC-Process.svg/600px-MVC-Process.svg.png)
+
+            看完圖之後大概懂了，使用者的操作先進 Controller，Controller 去問 Model 拿資料，再把結果丟給 View 顯示。
+
+            之前一直搞混 Model 跟 ViewModel 的差別，現在知道 ViewModel 是專門給 View 用的資料結構，不是直接把 domain model 丟過去。
+
+            ASP.NET Core 的 Controller 還有 ApiController 跟一般 Controller 的區別，ApiController 會自動處理 model binding 和 validation，不用自己寫。
+
+            還要研究的：
+            - Razor Pages 跟 MVC 的選擇時機
+            - minimal API 跟 Controller-based API 的差異
+            - 如何搭配 CQRS 讓 Controller 更薄
+            """;
+
+        var structurer = new GeminiNoteStructurer(GeminiClient(), new SimpleHttpClientFactory());
+        var result = await structurer.StructureAsync(content, "請將這篇學習筆記結構化，整理成有條理的重點，圖片中有架構圖請仔細理解並納入分析");
+
+        Assert.NotEmpty(result.StructuredContent);
+        Assert.Contains("###", result.StructuredContent);
+        Assert.NotEmpty(result.Description);
+
+        Console.WriteLine($"描述：{result.Description}");
+        Console.WriteLine($"\n結構化內容：\n{result.StructuredContent}");
     }
 }
