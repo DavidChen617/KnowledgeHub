@@ -24,7 +24,6 @@ public class Comment : AggregateRoot<CommentId>
     public UserId UserId { get; }
     public CommentId? ParentCommentId { get; }
     public string Content { get; private set; }
-    public DateTime CreatedAt { get; }
     public DateTime UpdatedAt { get; private set; }
 
     private Comment(CommentId id, NoteId noteId, UserId userId, CommentId? parentCommentId, string content)
@@ -34,7 +33,6 @@ public class Comment : AggregateRoot<CommentId>
         UserId = userId;
         ParentCommentId = parentCommentId;
         Content = content;
-        CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 
