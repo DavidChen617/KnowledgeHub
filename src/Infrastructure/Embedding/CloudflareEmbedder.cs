@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Infrastructure.Embedding;
 
-public class CohereEmbedder(HttpClient httpClient) : EmbedderHandler
+public class CloudflareEmbedder(HttpClient httpClient) : EmbedderHandler
 {
     public override async Task<float[]> EmbedAsync(string text, CancellationToken ct = default)
     {
@@ -32,32 +32,31 @@ public class CohereEmbedder(HttpClient httpClient) : EmbedderHandler
 
     private async Task<float[][]> CallApiAsync(IReadOnlyList<string> texts, CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "embed");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "embeddings");
         request.Content = JsonContent.Create(new
         {
-            model = "embed-v4.0",
-            input_type = "search_document",
-            embedding_types = new[] { "float" },
-            output_dimension = 1024,
-            texts
+            model = "@cf/baai/bge-m3",
+            input = texts
         });
 
         var response = await httpClient.SendAsync(request, ct);
 
         if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Cohere {(int)response.StatusCode}");
+            throw new HttpRequestException($"Cloudflare {(int)response.StatusCode}");
 
         var result = await response.Content.ReadFromJsonAsync<EmbedResponse>(ct)
-            ?? throw new HttpRequestException("Cohere returned empty response.");
+            ?? throw new HttpRequestException("Cloudflare returned empty response.");
 
-        return result.Embeddings.Float;
+        return result.Data.Select(d => d.Embedding).ToArray();
     }
 }
 
 file record EmbedResponse(
-    [property: JsonPropertyName("id")] string Id,
-    [property: JsonPropertyName("texts")] List<string> Texts,
-    [property: JsonPropertyName("embeddings")] CohereEmbeddings Embeddings);
+    [property: JsonPropertyName("object")] string Object,
+    [property: JsonPropertyName("data")] List<EmbedData> Data,
+    [property: JsonPropertyName("model")] string Model);
 
-file record CohereEmbeddings(
-    [property: JsonPropertyName("float")] float[][] Float);
+file record EmbedData(
+    [property: JsonPropertyName("object")] string Object,
+    [property: JsonPropertyName("index")] int Index,
+    [property: JsonPropertyName("embedding")] float[] Embedding);
