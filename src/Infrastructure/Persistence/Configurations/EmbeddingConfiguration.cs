@@ -31,10 +31,10 @@ internal sealed class EmbeddingConfiguration : IEntityTypeConfiguration<DAI.Embe
                     (a, b) => a != null && b != null && a.SequenceEqual(b),
                     v => v.Aggregate(0, (h, e) => HashCode.Combine(h, e.GetHashCode())),
                     v => v.ToArray()))
-            .HasColumnType("vector(1536)")
+            .HasColumnType("vector(1024)")
             .HasColumnName("vector")
             .IsRequired()
-            .HasComment("Cohere embed-v3 輸出的 1536 維浮點向量");
+            .HasComment("1024 維浮點向量（多 provider 統一輸出維度）");
 
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")

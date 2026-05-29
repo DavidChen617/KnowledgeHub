@@ -31,6 +31,13 @@ internal sealed class NoteStructureChunkConfiguration : IEntityTypeConfiguration
             .IsRequired()
             .HasComment("Chunk 的純文字內容，用於 embedding");
 
+        builder.Property(c => c.Source)
+            .HasColumnName("source")
+            .IsRequired()
+            .HasConversion<string>()
+            .HasDefaultValue(DAI.ChunkSource.Structured)
+            .HasComment("Chunk 來源：Raw 或 Structured");
+
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()
