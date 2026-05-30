@@ -10,16 +10,10 @@ internal sealed class KafkaMessageSubscriber(
     IProducer<string, string> producer,
     ILogger<KafkaMessageSubscriber> logger) : IMessageSubscriber
 {
-    private static readonly string[] Topics =
-    [
-        KafkaTopics.NoteDeleted,
-        KafkaTopics.NoteImagesChanged,
-    ];
-
     public async IAsyncEnumerable<EventEnvelope> SubscribeAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        consumer.Subscribe(Topics);
+        consumer.Subscribe(KafkaTopics.DomainEvents);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -34,7 +28,7 @@ internal sealed class KafkaMessageSubscriber(
                 ["kafka-partition"] = cr.Partition.Value.ToString(),
                 ["kafka-offset"] = cr.Offset.Value.ToString()
             };
-
+            
             yield return EventEnvelope.Create(cr.Message.Key, cr.Message.Value, timestamp, headers);
         }
 

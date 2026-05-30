@@ -7,8 +7,7 @@ internal sealed class KafkaEventPublisher(IProducer<string, string> producer) : 
 {
     public async Task PublishAsync(OutboxMessage message, CancellationToken cancellationToken = default)
     {
-        var topic = KafkaTopics.FromEventType(message.EventType);
-        await producer.ProduceAsync(topic, new Message<string, string>
+        await producer.ProduceAsync(KafkaTopics.DomainEvents, new Message<string, string>
         {
             Key = message.EventType,
             Value = message.Payload,

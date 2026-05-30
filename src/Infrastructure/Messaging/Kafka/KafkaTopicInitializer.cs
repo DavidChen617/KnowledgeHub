@@ -9,11 +9,7 @@ internal sealed class KafkaTopicInitializer(
     IProducer<string, string> producer,
     ILogger<KafkaTopicInitializer> logger) : IHostedService
 {
-    private static readonly string[] Topics =
-    [
-        KafkaTopics.NoteDeleted,
-        KafkaTopics.NoteImagesChanged,
-    ];
+    private static readonly string[] Topics = [KafkaTopics.DomainEvents];
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
