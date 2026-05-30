@@ -8,6 +8,7 @@ using CoreMesh.Endpoints.Extensions;
 using Domain.Users;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
@@ -102,15 +103,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapEndpoints();
-app.Use(async (ctx, next) =>
-{
-    var fs = ctx.Features;
-    foreach (var f in fs)
-    {
-        Console.WriteLine("Key: " + f.Key);
-        Console.WriteLine("Value: " + f.Value);
-    }
+app.UseRouting();
 
-    await next();
-});
 app.Run();
