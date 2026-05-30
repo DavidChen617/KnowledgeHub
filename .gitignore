@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Redis config (contains password)
+docker/redis.conf
+
 # User-specific files
 *.rsuser
 *.suo
