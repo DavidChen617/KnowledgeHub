@@ -50,12 +50,23 @@ public class Comment : AggregateRoot<CommentId>
         if (string.IsNullOrWhiteSpace(content)) return Errors.EmptyContent;
         Content = content;
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new CommentEditedEvent(Id.Value, NoteId.Value));
         return Result.Success();
     }
 
     public CommentLike Like(UserId userId)
     {
-        RaiseDomainEvent(new CommentLikedEvent(Id.Value, userId.Value));
+        RaiseDomainEvent(new CommentLikedEvent(Id.Value, userId.Value, NoteId.Value));
         return CommentLike.Create(Id, userId);
+    }
+
+    public void Unlike()
+    {
+        RaiseDomainEvent(new CommentUnlikedEvent(Id.Value, NoteId.Value));
+    }
+
+    public void Delete()
+    {
+        RaiseDomainEvent(new CommentDeletedEvent(Id.Value, NoteId.Value));
     }
 }

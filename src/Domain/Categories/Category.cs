@@ -1,3 +1,4 @@
+using Domain.Categories.Events;
 using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
@@ -31,13 +32,21 @@ public class Category : AggregateRoot<CategoryId>
     public static Result<Category> Create(UserId userId, string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return Errors.EmptyName;
-        return Result.Success(new Category(CategoryId.New(), userId, name));
+        var category = new Category(CategoryId.New(), userId, name);
+        category.RaiseDomainEvent(new CategoryCreatedEvent(category.Id.Value, userId.Value));
+        return Result.Success(category);
     }
 
     public Result Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return Errors.EmptyName;
         Name = name;
+        RaiseDomainEvent(new CategoryUpdatedEvent(Id.Value, UserId.Value));
         return Result.Success();
+    }
+
+    public void Delete()
+    {
+        RaiseDomainEvent(new CategoryDeletedEvent(Id.Value, UserId.Value));
     }
 }

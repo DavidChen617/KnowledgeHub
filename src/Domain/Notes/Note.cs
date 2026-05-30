@@ -50,6 +50,7 @@ public class Note : AggregateRoot<NoteId>
 
         var note = new Note(NoteId.New(), userId, title, new NoteContent(content));
         note.SyncImages();
+        note.RaiseDomainEvent(new NoteCreatedEvent(note.Id.Value, userId.Value));
         return Result.Success(note);
     }
 
@@ -58,6 +59,7 @@ public class Note : AggregateRoot<NoteId>
         Content = new NoteContent(content);
         UpdatedAt = DateTime.UtcNow;
         SyncImages();
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
         return Result.Success();
     }
 
@@ -67,6 +69,7 @@ public class Note : AggregateRoot<NoteId>
 
         Title = title;
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
         return Result.Success();
     }
 
@@ -74,6 +77,7 @@ public class Note : AggregateRoot<NoteId>
     {
         CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
     }
 
     public NoteStructure AddStructure(string prompt, string content, string description)
@@ -115,21 +119,26 @@ public class Note : AggregateRoot<NoteId>
 
     public SharedLink CreateSharedLink(SharePermission permission)
     {
+        var previousToken = SharedLink?.Token;
         SharedLink = SharedLink.Create(permission);
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new SharedLinkCreatedEvent(Id.Value, UserId.Value, previousToken));
         return SharedLink;
     }
 
     public void DeleteSharedLink()
     {
+        if (SharedLink is null) return;
+        var token = SharedLink.Token;
         SharedLink = null;
         UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new SharedLinkDeletedEvent(Id.Value, UserId.Value, token));
     }
 
     public void Delete()
     {
         var imageUrls = _images.Select(img => img.PublicUrl).ToList();
-        RaiseDomainEvent(new NoteDeletedEvent(Id, imageUrls));
+        RaiseDomainEvent(new NoteDeletedEvent(Id.Value, UserId.Value, imageUrls));
     }
 
     private void SyncImages()
