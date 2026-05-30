@@ -5,6 +5,7 @@ using CoreMesh.Outbox.Extensions;
 using Domain.AI;
 using Domain.Categories;
 using Domain.Comments;
+using Domain.Notifications;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
@@ -17,6 +18,7 @@ using Infrastructure.Messaging.Kafka;
 using Infrastructure.NoteStructure;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
+using Infrastructure.Notifications;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Search;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,7 @@ public static class Dependency
             )) { Api = { Secure = true } });
 
             services.AddScoped<IImageStorage, CloudinaryImageStorage>();
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
 
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
