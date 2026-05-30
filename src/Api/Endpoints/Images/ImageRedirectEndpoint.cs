@@ -1,3 +1,4 @@
+using Api.Extensions;
 using CoreMesh.Endpoints;
 using Microsoft.Extensions.Configuration;
 
@@ -17,7 +18,7 @@ public sealed class ImageRedirectEndpoint : IGroupedEndpoint<ImageProxyGroup>
     {
         var cloudName = config["Cloudinary:CloudName"];
         if (string.IsNullOrEmpty(cloudName))
-            return Results.NotFound();
+            return ResultExtensions.NotFound();
 
         var cloudinaryUrl = $"https://res.cloudinary.com/{cloudName}/image/upload/{publicId}";
         return Results.Redirect(cloudinaryUrl);

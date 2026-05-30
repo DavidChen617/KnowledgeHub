@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Auth;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -10,7 +11,7 @@ public sealed class RefreshTokenEndpoint : IGroupedEndpoint<OAuthGroup>
     {
         group.MapPost("/refresh", HandleAsync)
             .Produces<TokenResponse>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status403Forbidden);
     }
 
     private static async Task<IResult> HandleAsync(
@@ -19,7 +20,7 @@ public sealed class RefreshTokenEndpoint : IGroupedEndpoint<OAuthGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(new RenewTokenCommandRequest(req.RefreshToken), ct);
-        return result is null ? Results.Unauthorized() : Results.Ok(result);
+        return result.ToHttpResult();
     }
 }
 

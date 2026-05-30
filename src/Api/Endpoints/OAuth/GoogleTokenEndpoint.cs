@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Auth;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -10,7 +11,7 @@ public sealed class GoogleTokenEndpoint : IGroupedEndpoint<OAuthGroup>
     {
         group.MapPost("/google/token", HandleAsync)
             .Produces<TokenResponse>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status403Forbidden);
     }
 
     private static async Task<IResult> HandleAsync(
@@ -21,7 +22,7 @@ public sealed class GoogleTokenEndpoint : IGroupedEndpoint<OAuthGroup>
     {
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         var result = await dispatcher.Send(new ExchangeTokenCommandRequest(req.IdToken, baseUrl), ct);
-        return result is null ? Results.Unauthorized() : Results.Ok(result);
+        return result.ToHttpResult();
     }
 }
 
