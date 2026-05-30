@@ -1,3 +1,4 @@
+using Domain.Comments.Events;
 using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
@@ -39,7 +40,9 @@ public class Comment : AggregateRoot<CommentId>
     public static Result<Comment> Create(NoteId noteId, UserId userId, string content, CommentId? parentCommentId = null)
     {
         if (string.IsNullOrWhiteSpace(content)) return Errors.EmptyContent;
-        return Result.Success(new Comment(CommentId.New(), noteId, userId, parentCommentId, content));
+        var comment = new Comment(CommentId.New(), noteId, userId, parentCommentId, content);
+        comment.RaiseDomainEvent(new CommentCreatedEvent(comment.Id, noteId, userId, parentCommentId));
+        return Result.Success(comment);
     }
 
     public Result UpdateContent(string content)
@@ -48,5 +51,11 @@ public class Comment : AggregateRoot<CommentId>
         Content = content;
         UpdatedAt = DateTime.UtcNow;
         return Result.Success();
+    }
+
+    public CommentLike Like(UserId userId)
+    {
+        RaiseDomainEvent(new CommentLikedEvent(Id, userId));
+        return CommentLike.Create(Id, userId);
     }
 }

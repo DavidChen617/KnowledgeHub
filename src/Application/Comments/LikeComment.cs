@@ -21,7 +21,7 @@ public class LikeCommentHandler(ICommentRepository commentRepository, IUnitOfWor
         var existing = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
         if (existing is not null) return AlreadyLiked;
 
-        await commentRepository.AddLikeAsync(CommentLike.Create(command.CommentId, command.UserId), cancellationToken);
+        await commentRepository.AddLikeAsync(comment.Like(command.UserId), cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success();
