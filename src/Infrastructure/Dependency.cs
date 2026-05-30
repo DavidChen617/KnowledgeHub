@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using Application.Interfaces;
 using Confluent.Kafka;
 using CoreMesh.Outbox.Extensions;
 using Domain.AI;
@@ -10,6 +11,7 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using Infrastructure.Auth;
+using Infrastructure.Cache;
 using Infrastructure.Email;
 using Infrastructure.FileStore;
 using Infrastructure.Embedding;
@@ -21,6 +23,7 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Search;
+using StackExchange.Redis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +55,19 @@ public static class Dependency
             services.AddScoped<IImageStorage, CloudinaryImageStorage>();
             services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+            services
+                .AddSingleton<IConnectionMultiplexer>(_ =>
+                    ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!)
+                ).AddSingleton<IDatabase>(sp =>
+                    sp.GetRequiredService<IConnectionMultiplexer>().GetDatabase()
+                ).AddSingleton<IServer>(sp =>
+                {
+                    var conn = sp.GetRequiredService<IConnectionMultiplexer>();
+                    return conn.GetServer(conn.GetEndPoints()[0]);
+                });
+
+            services.AddSingleton<ICacher, RedisCacher>();
+
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("Default"),
@@ -61,11 +77,11 @@ public static class Dependency
 
             var bootstrapServers = configuration["Kafka:BootstrapServers"]!;
             var groupId = configuration["Kafka:GroupId"] ?? "knowledge-hub";
-            
+
             services.AddSingleton<IProducer<string, string>>(_ =>
                 new ProducerBuilder<string, string>(new ProducerConfig
                 {
-                    BootstrapServers = bootstrapServers,
+                    BootstrapServers = bootstrapServers, 
                     Acks = Acks.All
                 }).Build());
 
@@ -85,9 +101,9 @@ public static class Dependency
                 options =>
                 {
                     options.AddOutboxStore<EfCoreOutboxStore>()
-                           .AddOutboxWriter<EfCoreOutboxWriter>()
-                           .AddMessageQueue<KafkaEventPublisher, KafkaMessageSubscriber>()
-                           .WithConsumer();
+                        .AddOutboxWriter<EfCoreOutboxWriter>()
+                        .AddMessageQueue<KafkaEventPublisher, KafkaMessageSubscriber>()
+                        .WithConsumer();
                 });
 
             services.AddHttpClient<GeminiImageDescriber>(client =>
@@ -118,8 +134,7 @@ public static class Dependency
             {
                 var describers = new ImageDescriberHandler[]
                 {
-                    sp.GetRequiredService<GeminiImageDescriber>(),
-                    sp.GetRequiredService<GroqImageDescriber>(),
+                    sp.GetRequiredService<GeminiImageDescriber>(), sp.GetRequiredService<GroqImageDescriber>(),
                     sp.GetRequiredService<MistralImageDescriber>(),
                     sp.GetRequiredService<OpenRouterImageDescriber>(),
                 };
@@ -175,8 +190,7 @@ public static class Dependency
             {
                 var structurers = new NoteStructurerHandler[]
                 {
-                    sp.GetRequiredService<GroqNoteStructurer>(),
-                    sp.GetRequiredService<MistralNoteStructurer>(),
+                    sp.GetRequiredService<GroqNoteStructurer>(), sp.GetRequiredService<MistralNoteStructurer>(),
                     sp.GetRequiredService<CerebrasNoteStructurer>(),
                     sp.GetRequiredService<OpenRouterNoteStructurer>(),
                     sp.GetRequiredService<CloudflareNoteStructurer>(),
@@ -226,10 +240,8 @@ public static class Dependency
             {
                 var embedders = new EmbedderHandler[]
                 {
-                    sp.GetRequiredService<CohereEmbedder>(),
-                    sp.GetRequiredService<MistralEmbedder>(),
-                    sp.GetRequiredService<CloudflareEmbedder>(),
-                    sp.GetRequiredService<OpenRouterEmbedder>(),
+                    sp.GetRequiredService<CohereEmbedder>(), sp.GetRequiredService<MistralEmbedder>(),
+                    sp.GetRequiredService<CloudflareEmbedder>(), sp.GetRequiredService<OpenRouterEmbedder>(),
                     sp.GetRequiredService<GeminiEmbedder>(),
                 };
 
