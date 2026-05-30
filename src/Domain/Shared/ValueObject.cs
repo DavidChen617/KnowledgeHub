@@ -12,4 +12,9 @@ public abstract class ValueObject
 
     public override int GetHashCode() =>
         GetEqualityComponents().Aggregate(0, HashCode.Combine);
+
+    public static bool operator ==(ValueObject? left, ValueObject? right) =>
+        left is null ? right is null : left.Equals(right);
+
+    public static bool operator !=(ValueObject? left, ValueObject? right) => !(left == right);
 }
