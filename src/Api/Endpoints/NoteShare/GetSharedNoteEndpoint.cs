@@ -10,7 +10,7 @@ public sealed class GetSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{token}", HandleAsync)
-            .Produces<GetNoteByTokenQueryResponse>(StatusCodes.Status200OK)
+            .Produces<Response<GetNoteByTokenQueryResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
     }
 

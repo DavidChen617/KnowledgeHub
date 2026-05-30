@@ -12,7 +12,7 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/{id:guid}/structure", HandleAsync)
-            .Produces<StructureNoteCommandResponse>(StatusCodes.Status200OK)
+            .Produces<Response<StructureNoteCommandResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status503ServiceUnavailable);

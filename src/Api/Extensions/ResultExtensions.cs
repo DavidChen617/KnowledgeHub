@@ -25,7 +25,7 @@ public static class ResultExtensions
         public IResult ToNoContent()
             => result.IsSuccess ? Results.NoContent() : result.Error.ToResponse();
 
-        public IResult ToOk<TOut>(TOut value)
+        public IResult ToHttpResult<TOut>(TOut value)
             => result.IsSuccess ? Results.Ok(Response.Ok(value)) : result.Error.ToResponse();
     }
 

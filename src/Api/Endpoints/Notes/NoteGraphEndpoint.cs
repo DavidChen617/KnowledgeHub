@@ -11,7 +11,7 @@ public sealed class NoteGraphEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/graph", HandleAsync)
-            .Produces<GetNoteGraphQueryResponse>(StatusCodes.Status200OK)
+            .Produces<Response<GetNoteGraphQueryResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 

@@ -11,7 +11,7 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/search", HandleAsync)
-            .Produces<SearchQueryResponse>(StatusCodes.Status200OK)
+            .Produces<Response<SearchQueryResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status503ServiceUnavailable);
     }

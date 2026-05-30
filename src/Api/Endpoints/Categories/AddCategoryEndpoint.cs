@@ -11,7 +11,7 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/", HandleAsync)
-            .Produces<AddCategoryCommandResponse>(StatusCodes.Status201Created)
+            .Produces<Response<AddCategoryCommandResponse>>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized);
     }

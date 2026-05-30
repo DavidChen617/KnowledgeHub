@@ -12,7 +12,7 @@ public sealed class ListCommentsEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{id:guid}/comments", HandleAsync)
-            .Produces<GetCommentsQueryResponse>(StatusCodes.Status200OK)
+            .Produces<Response<GetCommentsQueryResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }

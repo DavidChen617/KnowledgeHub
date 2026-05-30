@@ -12,7 +12,7 @@ public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/{id:guid}/share", HandleAsync)
-            .Produces<CreateSharedLinkResponse>(StatusCodes.Status200OK)
+            .Produces<Response<CreateSharedLinkResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }

@@ -12,7 +12,7 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/", HandleAsync)
-            .Produces<AddNoteCommandResponse>(StatusCodes.Status201Created)
+            .Produces<Response<AddNoteCommandResponse>>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 

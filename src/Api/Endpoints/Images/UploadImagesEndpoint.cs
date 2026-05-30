@@ -12,7 +12,7 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
     {
         group.MapPost("/", HandleAsync)
             .DisableAntiforgery()
-            .Produces<IReadOnlyList<UploadImageResponse>>(StatusCodes.Status200OK)
+            .Produces<Response<IReadOnlyList<UploadImageResponse>>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 

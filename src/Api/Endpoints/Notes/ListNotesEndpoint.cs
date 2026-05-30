@@ -11,7 +11,7 @@ public sealed class ListNotesEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/", HandleAsync)
-            .Produces<ListQueryResponse>(StatusCodes.Status200OK)
+            .Produces<Response<ListQueryResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 

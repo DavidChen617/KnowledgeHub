@@ -13,7 +13,7 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPut("/{id:guid}", HandleAsync)
-            .Produces<UpdateNoteCommandResponse>(StatusCodes.Status200OK)
+            .Produces<Response<UpdateNoteCommandResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }

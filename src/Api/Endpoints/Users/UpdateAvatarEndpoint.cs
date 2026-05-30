@@ -13,7 +13,7 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
     {
         group.MapPatch("/me/avatar", HandleAsync)
             .DisableAntiforgery()
-            .Produces<UpdateAvatarResponse>(StatusCodes.Status200OK)
+            .Produces<Response<UpdateAvatarResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized);
     }
@@ -32,7 +32,7 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
         var avatarUrl = $"{baseUrl}/image/{storageKey}";
 
         var result = await dispatcher.Send(new UpdateAvatarCommandRequest(currentUser.Id, avatarUrl), ct);
-        return result.ToOk(new UpdateAvatarResponse(avatarUrl));
+        return result.ToHttpResult(new UpdateAvatarResponse(avatarUrl));
     }
 }
 

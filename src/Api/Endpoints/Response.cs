@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api;
+namespace Api.Endpoints;
 
 public class Response
 {

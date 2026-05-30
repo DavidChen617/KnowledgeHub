@@ -10,7 +10,7 @@ public sealed class GoogleTokenEndpoint : IGroupedEndpoint<OAuthGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/google/token", HandleAsync)
-            .Produces<TokenResponse>(StatusCodes.Status200OK)
+            .Produces<Response<TokenResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status403Forbidden);
     }
 

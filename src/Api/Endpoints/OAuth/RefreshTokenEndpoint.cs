@@ -10,7 +10,7 @@ public sealed class RefreshTokenEndpoint : IGroupedEndpoint<OAuthGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/refresh", HandleAsync)
-            .Produces<TokenResponse>(StatusCodes.Status200OK)
+            .Produces<Response<TokenResponse>>()
             .Produces(StatusCodes.Status403Forbidden);
     }
 

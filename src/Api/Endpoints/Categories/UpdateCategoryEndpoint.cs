@@ -12,7 +12,7 @@ public sealed class UpdateCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPut("/{id:guid}", HandleAsync)
-            .Produces<UpdateCategoryCommandResponse>(StatusCodes.Status200OK)
+            .Produces<Response<UpdateCategoryCommandResponse>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized);
