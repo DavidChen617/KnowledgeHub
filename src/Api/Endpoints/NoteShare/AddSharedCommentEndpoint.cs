@@ -5,8 +5,6 @@ using CoreMesh.Endpoints;
 using Domain.Comments;
 using Domain.Notes;
 using Domain.Users;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Api.Endpoints.NoteShare;
 
 public sealed class AddSharedCommentEndpoint : IGroupedEndpoint<ShareGroup>
@@ -30,9 +28,7 @@ public sealed class AddSharedCommentEndpoint : IGroupedEndpoint<ShareGroup>
         CancellationToken ct)
     {
         var note = await noteRepository.GetBySharedTokenAsync(token, ct);
-        if (note is null) return Results.Json(
-            Response.Fail(new ProblemDetails { Status = StatusCodes.Status404NotFound }),
-            statusCode: StatusCodes.Status404NotFound);
+        if (note is null) return ResultExtensions.NotFound();
 
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(

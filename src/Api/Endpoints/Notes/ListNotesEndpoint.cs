@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -20,7 +21,6 @@ public sealed class ListNotesEndpoint : IGroupedEndpoint<NotesGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(new ListQueryRequest(currentUser.Id), ct);
-
-        return Results.Ok(Response.Ok(result));
+        return result.ToHttpResult();
     }
 }

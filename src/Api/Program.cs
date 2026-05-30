@@ -8,7 +8,6 @@ using CoreMesh.Endpoints.Extensions;
 using Domain.Users;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
@@ -31,7 +30,6 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -39,7 +37,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
             ValidateIssuer = false,
             ValidateAudience = false,
             ClockSkew = TimeSpan.Zero
@@ -56,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 }
 
                 var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                var user = await repo.GetByIdAsync(new UserId(guid));
+                var user = await repo.GetByIdAsync(new (guid));
                 if (user is null)
                 {
                     ctx.Fail("User not found");

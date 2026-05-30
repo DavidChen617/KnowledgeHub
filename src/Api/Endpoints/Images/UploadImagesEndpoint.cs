@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Images;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -26,13 +27,12 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
             return Results.BadRequest("No files provided.");
 
         var items = files.Select(f => new ImageUploadItem(f.OpenReadStream(), f.FileName)).ToList();
-        var results = await dispatcher.Send(new UploadImagesCommandRequest(items), ct);
+        var result = await dispatcher.Send(new UploadImagesCommandRequest(items), ct);
 
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
-        var response = results.Select(r =>
-            new UploadImageResponse(r.OriginalName, $"{baseUrl}/image/{r.StorageKey}")).ToList();
-
-        return Results.Ok(Response.Ok(response));
+        return result.ToHttpResult(results => results
+            .Select(r => new UploadImageResponse(r.OriginalName, $"{baseUrl}/image/{r.StorageKey}"))
+            .ToList());
     }
 }
 

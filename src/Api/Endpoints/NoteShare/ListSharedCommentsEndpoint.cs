@@ -3,8 +3,6 @@ using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Notes;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Api.Endpoints.NoteShare;
 
 public sealed class ListSharedCommentsEndpoint : IGroupedEndpoint<ShareGroup>
@@ -23,9 +21,7 @@ public sealed class ListSharedCommentsEndpoint : IGroupedEndpoint<ShareGroup>
         CancellationToken ct)
     {
         var note = await noteRepository.GetBySharedTokenAsync(token, ct);
-        if (note is null) return Results.Json(
-            Response.Fail(new ProblemDetails { Status = StatusCodes.Status404NotFound }),
-            statusCode: StatusCodes.Status404NotFound);
+        if (note is null) return ResultExtensions.NotFound();
 
         var result = await dispatcher.Send(
             new GetCommentsQueryRequest(note.Id, null, token), ct);

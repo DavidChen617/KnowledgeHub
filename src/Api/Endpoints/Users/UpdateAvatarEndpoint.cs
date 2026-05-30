@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Users;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -30,9 +31,8 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         var avatarUrl = $"{baseUrl}/image/{storageKey}";
 
-        await dispatcher.Send(new UpdateAvatarCommandRequest(currentUser.Id, avatarUrl), ct);
-
-        return Results.Ok(Response.Ok(new UpdateAvatarResponse(avatarUrl)));
+        var result = await dispatcher.Send(new UpdateAvatarCommandRequest(currentUser.Id, avatarUrl), ct);
+        return result.ToOk(new UpdateAvatarResponse(avatarUrl));
     }
 }
 

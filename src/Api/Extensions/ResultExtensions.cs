@@ -23,7 +23,14 @@ public static class ResultExtensions
     {
         public IResult ToNoContent()
             => result.IsSuccess ? Results.NoContent() : result.Error.ToResponse();
+
+        public IResult ToOk<TOut>(TOut value)
+            => result.IsSuccess ? Results.Ok(Response.Ok(value)) : result.Error.ToResponse();
     }
+
+    public static IResult NotFound() => Results.Json(
+        Response.Fail(new ProblemDetails { Status = StatusCodes.Status404NotFound }),
+        statusCode: StatusCodes.Status404NotFound);
 
     extension(Error error)
     {

@@ -1,19 +1,20 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
+using ShareKernal;
 
 namespace Application.Images;
 
 public record UploadImagesCommandRequest(IReadOnlyList<ImageUploadItem> Items)
-    : IRequest<IReadOnlyList<UploadedImageResult>>;
+    : IRequest<Result<IReadOnlyList<UploadedImageResult>>>;
 
 public record ImageUploadItem(Stream Content, string FileName);
 
 public record UploadedImageResult(string OriginalName, string StorageKey);
 
 public class UploadImagesHandler(IImageStorage imageStorage)
-    : IRequestHandler<UploadImagesCommandRequest, IReadOnlyList<UploadedImageResult>>
+    : IRequestHandler<UploadImagesCommandRequest, Result<IReadOnlyList<UploadedImageResult>>>
 {
-    public async Task<IReadOnlyList<UploadedImageResult>> Handle(
+    public async Task<Result<IReadOnlyList<UploadedImageResult>>> Handle(
         UploadImagesCommandRequest command, CancellationToken ct)
     {
         var tasks = command.Items.Select(async item =>
@@ -22,6 +23,6 @@ public class UploadImagesHandler(IImageStorage imageStorage)
             return new UploadedImageResult(item.FileName, key);
         });
 
-        return await Task.WhenAll(tasks);
+        return Result.Success<IReadOnlyList<UploadedImageResult>>(await Task.WhenAll(tasks));
     }
 }
