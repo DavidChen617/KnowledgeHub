@@ -42,8 +42,8 @@ public class GetCommentsHandler(
         var comments = await commentRepository.GetByNoteIdAsync(query.NoteId, cancellationToken);
 
         var userIds = comments.Select(c => c.UserId).Distinct().ToList();
-        var users = await Task.WhenAll(userIds.Select(id => userRepository.GetByIdAsync(id, cancellationToken)));
-        var userMap = users.Where(u => u is not null).ToDictionary(u => u!.Id, u => u!);
+        var users = await userRepository.GetByIdsAsync(userIds, cancellationToken);
+        var userMap = users.ToDictionary(u => u.Id);
 
         var likeCounts = await commentRepository.GetLikeCountsAsync(comments.Select(c => c.Id), cancellationToken);
 

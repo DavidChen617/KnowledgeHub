@@ -10,6 +10,7 @@ using Domain.Notes;
 using Domain.Shared;
 using Domain.Users;
 using Infrastructure.Auth;
+using Infrastructure.Email;
 using Infrastructure.FileStore;
 using Infrastructure.Embedding;
 using Infrastructure.ImageDescription;
@@ -18,7 +19,6 @@ using Infrastructure.Messaging.Kafka;
 using Infrastructure.NoteStructure;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
-using Infrastructure.Notifications;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Search;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +55,7 @@ public static class Dependency
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("Default"),
-                    o => o.UseVector());
+                    o => o.UseVector().UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
                 options.AddInterceptors(sp.GetRequiredService<DomainEventInterceptor>());
             });
 

@@ -39,12 +39,10 @@ internal sealed class CommentRepository(AppDbContext db) : ICommentRepository
 
     public async Task<Dictionary<CommentId, int>> GetLikeCountsAsync(IEnumerable<CommentId> commentIds, CancellationToken ct = default)
     {
-        var ids = commentIds.Select(id => id.Value).ToList();
-        var rows = await db.CommentLikes
-            .Where(l => ids.Contains(EF.Property<Guid>(l, "comment_id")))
-            .GroupBy(l => EF.Property<Guid>(l, "comment_id"))
-            .Select(g => new { CommentId = g.Key, Count = g.Count() })
-            .ToListAsync(ct);
-        return rows.ToDictionary(x => new CommentId(x.CommentId), x => x.Count);
+        var ids = commentIds.ToList();
+        return await db.CommentLikes
+            .Where(l => ids.Contains(l.CommentId))
+            .GroupBy(l => l.CommentId)
+            .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);
     }
 }
