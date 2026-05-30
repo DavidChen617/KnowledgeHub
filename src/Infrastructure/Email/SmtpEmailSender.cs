@@ -15,16 +15,12 @@ public sealed class SmtpEmailSender(IConfiguration configuration) : IEmailSender
         var password = configuration["Smtp:Password"]!;
         var from = configuration["Smtp:From"]!;
 
-        using var client = new SmtpClient(host, port)
-        {
-            EnableSsl = true,
-            Credentials = new NetworkCredential(username, password)
-        };
+        using var client = new SmtpClient(host, port);
+        client.EnableSsl = true;
+        client.Credentials = new NetworkCredential(username, password);
 
-        using var message = new MailMessage(from, to, subject, htmlBody)
-        {
-            IsBodyHtml = true
-        };
+        using var message = new MailMessage(from, to, subject, htmlBody);
+        message.IsBodyHtml = true;
 
         await client.SendMailAsync(message, ct);
     }

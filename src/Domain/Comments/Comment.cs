@@ -41,7 +41,7 @@ public class Comment : AggregateRoot<CommentId>
     {
         if (string.IsNullOrWhiteSpace(content)) return Errors.EmptyContent;
         var comment = new Comment(CommentId.New(), noteId, userId, parentCommentId, content);
-        comment.RaiseDomainEvent(new CommentCreatedEvent(comment.Id, noteId, userId, parentCommentId));
+        comment.RaiseDomainEvent(new CommentCreatedEvent(comment.Id.Value, noteId.Value, userId.Value, parentCommentId?.Value));
         return Result.Success(comment);
     }
 
@@ -55,7 +55,7 @@ public class Comment : AggregateRoot<CommentId>
 
     public CommentLike Like(UserId userId)
     {
-        RaiseDomainEvent(new CommentLikedEvent(Id, userId));
+        RaiseDomainEvent(new CommentLikedEvent(Id.Value, userId.Value));
         return CommentLike.Create(Id, userId);
     }
 }
