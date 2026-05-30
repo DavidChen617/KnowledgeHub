@@ -19,14 +19,12 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
 
     private static async Task<IResult> HandleAsync(
         IFormFile file,
-        User? currentUser,
+        User currentUser,
         HttpContext ctx,
         IImageStorage imageStorage,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var storageKey = await imageStorage.UploadAsync(file.OpenReadStream(), file.FileName, ct);
 
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
@@ -34,7 +32,7 @@ public sealed class UpdateAvatarEndpoint : IGroupedEndpoint<UsersGroup>
 
         await dispatcher.Send(new UpdateAvatarCommandRequest(currentUser.Id, avatarUrl), ct);
 
-        return Results.Ok(new UpdateAvatarResponse(avatarUrl));
+        return Results.Ok(Response.Ok(new UpdateAvatarResponse(avatarUrl)));
     }
 }
 

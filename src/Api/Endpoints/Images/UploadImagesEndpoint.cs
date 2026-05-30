@@ -17,13 +17,11 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
 
     private static async Task<IResult> HandleAsync(
         IFormFileCollection files,
-        User? currentUser,
+        User currentUser,
         HttpContext ctx,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         if (files.Count == 0)
             return Results.BadRequest("No files provided.");
 
@@ -34,7 +32,7 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
         var response = results.Select(r =>
             new UploadImageResponse(r.OriginalName, $"{baseUrl}/image/{r.StorageKey}")).ToList();
 
-        return Results.Ok(response);
+        return Results.Ok(Response.Ok(response));
     }
 }
 

@@ -21,12 +21,10 @@ public sealed class EditCommentEndpoint : IGroupedEndpoint<CommentsGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         EditCommentRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(
             new EditCommentCommandRequest(new CommentId(id), currentUser.Id, req.Content), ct);
 

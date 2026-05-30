@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -18,15 +19,13 @@ public sealed class ListCommentsEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(
             new GetCommentsQueryRequest(new NoteId(id), currentUser.Id, null), ct);
 
-        return result is null ? Results.NotFound() : Results.Ok(result);
+        return result.ToHttpResult();
     }
 }

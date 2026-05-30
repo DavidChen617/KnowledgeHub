@@ -18,14 +18,12 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 
     private static async Task<IResult> HandleAsync(
         AddCategoryRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
-        return result.ToHttpResult(v => Results.Created($"/api/categories/{v.CategoryId}", Response.Ok(v)));
+        return result.ToCreated(v => $"/api/categories/{v.CategoryId}");
     }
 }
 

@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -20,18 +21,15 @@ public sealed class AddCommentEndpoint : IGroupedEndpoint<NotesGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         AddCommentRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(
             new AddCommentCommandRequest(new NoteId(id), currentUser.Id, req.Content, parentId, null), ct);
 
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
+        return result.ToNoContent();
     }
 }
 

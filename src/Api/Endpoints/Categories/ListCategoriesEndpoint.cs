@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -15,14 +16,11 @@ public sealed class ListCategoriesEndpoint : IGroupedEndpoint<CategoriesGroup>
     }
 
     private static async Task<IResult> HandleAsync(
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new ListCategoriesQueryRequest(currentUser.Id), ct);
-
-        return Results.Ok(result);
+        return result.ToHttpResult();
     }
 }

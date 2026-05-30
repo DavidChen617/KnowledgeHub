@@ -1,9 +1,11 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Comments;
 using Domain.Notes;
 using Domain.Users;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Endpoints.NoteShare;
 
@@ -22,22 +24,21 @@ public sealed class AddSharedCommentEndpoint : IGroupedEndpoint<ShareGroup>
     private static async Task<IResult> HandleAsync(
         string token,
         AddSharedCommentRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         INoteRepository noteRepository,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var note = await noteRepository.GetBySharedTokenAsync(token, ct);
-        if (note is null) return Results.NotFound();
+        if (note is null) return Results.Json(
+            Response.Fail(new ProblemDetails { Status = StatusCodes.Status404NotFound }),
+            statusCode: StatusCodes.Status404NotFound);
 
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(
             new AddCommentCommandRequest(note.Id, currentUser.Id, req.Content, parentId, token), ct);
 
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
+        return result.ToNoContent();
     }
 }
 

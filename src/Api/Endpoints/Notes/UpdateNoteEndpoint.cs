@@ -21,12 +21,10 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         UpdateNoteRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
         var result = await dispatcher.Send(

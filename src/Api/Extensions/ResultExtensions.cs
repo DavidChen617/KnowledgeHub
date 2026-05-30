@@ -1,25 +1,46 @@
+using Microsoft.AspNetCore.Mvc;
 using ShareKernal;
 
 namespace Api.Extensions;
 
 public static class ResultExtensions
 {
-    public static IResult ToHttpResult<T>(this Result<T> result, Func<T, IResult> onSuccess)
-        => result.IsSuccess ? onSuccess(result.Value) : result.Error.ToProblem();
-
-    public static IResult ToHttpResult<T>(this Result<T> result)
-        => result.ToHttpResult(v => Results.Ok(Response.Ok(v)));
-
-    public static IResult ToNoContent(this Result result)
-        => result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();
-
-    private static IResult ToProblem(this Error error) => error.Type switch
+    extension<T>(Result<T> result)
     {
-        ErrorType.NotFound           => Results.Problem(statusCode: StatusCodes.Status404NotFound),
-        ErrorType.Forbidden          => Results.Problem(statusCode: StatusCodes.Status403Forbidden),
-        ErrorType.Conflict           => Results.Problem(statusCode: StatusCodes.Status409Conflict,           detail: error.Description),
-        ErrorType.Validation         => Results.Problem(statusCode: StatusCodes.Status400BadRequest,         detail: error.Description),
-        ErrorType.ServiceUnavailable => Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, detail: error.Description),
-        _                            => Results.Problem(detail: error.Description)
-    };
+        public IResult ToHttpResult()
+            => result.IsSuccess ? Results.Ok(Response.Ok(result.Value)) : result.Error.ToResponse();
+
+        public IResult ToHttpResult<TOut>(Func<T, TOut> map)
+            => result.IsSuccess ? Results.Ok(Response.Ok(map(result.Value))) : result.Error.ToResponse();
+
+        public IResult ToCreated(Func<T, string> uri)
+            => result.IsSuccess
+                ? Results.Created(uri(result.Value), Response.Ok(result.Value))
+                : result.Error.ToResponse();
+    }
+
+    extension(Result result)
+    {
+        public IResult ToNoContent()
+            => result.IsSuccess ? Results.NoContent() : result.Error.ToResponse();
+    }
+
+    extension(Error error)
+    {
+        private IResult ToResponse()
+        {
+            var status = error.Type switch
+            {
+                ErrorType.NotFound => StatusCodes.Status404NotFound,
+                ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
+                _ => StatusCodes.Status500InternalServerError,
+            };
+            return Results.Json(
+                Response.Fail(new() { Status = status, Detail = error.Description }),
+                statusCode: status);
+        }
+    }
 }

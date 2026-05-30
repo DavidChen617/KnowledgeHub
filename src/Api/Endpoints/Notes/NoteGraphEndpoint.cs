@@ -15,13 +15,11 @@ public sealed class NoteGraphEndpoint : IGroupedEndpoint<NotesGroup>
     }
 
     private static async Task<IResult> HandleAsync(
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new GetNoteGraphQueryRequest(currentUser.Id), ct);
-        return Results.Ok(result);
+        return Results.Ok(Response.Ok(result));
     }
 }

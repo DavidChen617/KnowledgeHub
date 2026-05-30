@@ -19,12 +19,10 @@ public sealed class DeleteNoteEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(
             new DeleteNoteCommandRequest(new NoteId(id), currentUser.Id), ct);
 

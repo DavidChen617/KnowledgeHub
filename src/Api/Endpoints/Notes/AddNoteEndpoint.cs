@@ -18,18 +18,16 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         AddNoteRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
         var result = await dispatcher.Send(
             new AddNoteCommandRequest(currentUser.Id, req.Title, req.Content ?? string.Empty, categoryId), ct);
 
-        return result.ToHttpResult(v => Results.Created($"/api/notes/{v.NoteId}", Response.Ok(v)));
+        return result.ToCreated(v => $"/api/notes/{v.NoteId}");
     }
 }
 

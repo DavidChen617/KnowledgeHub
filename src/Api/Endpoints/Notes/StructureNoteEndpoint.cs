@@ -21,12 +21,10 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         StructureNoteRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(
             new StructureNoteCommandRequest(new NoteId(id), req.Prompt), ct);
 

@@ -20,12 +20,10 @@ public sealed class LikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new LikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
         return result.ToNoContent();

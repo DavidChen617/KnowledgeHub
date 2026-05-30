@@ -18,12 +18,10 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         string q,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new SearchQueryRequest(currentUser.Id, q), ct);
         return result.ToHttpResult();
     }

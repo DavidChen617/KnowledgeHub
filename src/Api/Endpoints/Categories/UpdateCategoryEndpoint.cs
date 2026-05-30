@@ -21,12 +21,10 @@ public sealed class UpdateCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
     private static async Task<IResult> HandleAsync(
         Guid id,
         UpdateCategoryRequest req,
-        User? currentUser,
+        User currentUser,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        if (currentUser is null) return Results.Unauthorized();
-
         var result = await dispatcher.Send(new UpdateCategoryCommandRequest(new CategoryId(id), currentUser.Id, req.Name), ct);
 
         return result.ToHttpResult();
