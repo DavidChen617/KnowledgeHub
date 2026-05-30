@@ -35,7 +35,6 @@ internal sealed class NoteStructureChunkConfiguration : IEntityTypeConfiguration
             .HasColumnName("source")
             .IsRequired()
             .HasConversion<string>()
-            .HasDefaultValue(DAI.ChunkSource.Structured)
             .HasComment("Chunk 來源：Raw 或 Structured");
 
         builder.Property(c => c.CreatedAt)
