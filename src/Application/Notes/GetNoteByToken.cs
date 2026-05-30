@@ -1,3 +1,4 @@
+using Application.Interfaces;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
 using ShareKernal;
@@ -18,15 +19,20 @@ public record GetNoteByTokenQueryResponse(
     IReadOnlyList<string> Images,
     SharePermission Permission);
 
-public class GetNoteByTokenHandler(INoteRepository noteRepository)
+public class GetNoteByTokenHandler(INoteRepository noteRepository, ICacher cacher)
     : IRequestHandler<GetNoteByTokenQueryRequest, Result<GetNoteByTokenQueryResponse>>
 {
     public async Task<Result<GetNoteByTokenQueryResponse>> Handle(GetNoteByTokenQueryRequest query, CancellationToken cancellationToken = default)
     {
+        var key = CacheKeys.NoteByToken(query.Token);
+
+        var cached = await cacher.GetAsync<GetNoteByTokenQueryResponse>(key, cancellationToken);
+        if (cached is not null) return Success(cached);
+
         var note = await noteRepository.GetBySharedTokenAsync(query.Token, cancellationToken);
         if (note is null) return TokenNotFound;
 
-        return Success(new GetNoteByTokenQueryResponse(
+        var response = new GetNoteByTokenQueryResponse(
             note.Id.Value,
             note.Title,
             note.Content,
@@ -34,6 +40,10 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository)
             note.UpdatedAt,
             note.LinkedNoteIds.Select(id => id.Value).ToList(),
             note.Images.Where(img => img.Enable).Select(img => img.PublicUrl).ToList(),
-            note.SharedLink!.Permission));
+            note.SharedLink!.Permission);
+
+        await cacher.SetAsync(key, response, TimeSpan.FromMinutes(5), cancellationToken);
+
+        return Success(response);
     }
 }

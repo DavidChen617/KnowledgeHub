@@ -1,3 +1,4 @@
+using Application.Interfaces;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Users;
@@ -11,13 +12,21 @@ public record ListCategoriesQueryRequest(UserId UserId)
 
 public record ListCategoriesQueryResponse(IReadOnlyList<CategorySummary> Categories);
 
-public class ListCategoriesHandler(ICategoryRepository categoryRepository)
+public class ListCategoriesHandler(ICategoryRepository categoryRepository, ICacher cacher)
     : IRequestHandler<ListCategoriesQueryRequest, Result<ListCategoriesQueryResponse>>
 {
     public async Task<Result<ListCategoriesQueryResponse>> Handle(ListCategoriesQueryRequest query, CancellationToken cancellationToken = default)
     {
-        var categories = await categoryRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
+        var key = CacheKeys.Categories(query.UserId.Value);
 
-        return Success(new ListCategoriesQueryResponse(categories));
+        var cached = await cacher.GetAsync<ListCategoriesQueryResponse>(key, cancellationToken);
+        if (cached is not null) return Success(cached);
+
+        var categories = await categoryRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
+        var response = new ListCategoriesQueryResponse(categories);
+
+        await cacher.SetAsync(key, response, TimeSpan.FromMinutes(10), cancellationToken);
+
+        return Success(response);
     }
 }

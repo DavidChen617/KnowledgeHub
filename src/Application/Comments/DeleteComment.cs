@@ -19,6 +19,7 @@ public class DeleteCommentHandler(ICommentRepository commentRepository, IUnitOfW
         if (comment is null) return NotFound;
         if (comment.UserId != command.UserId) return Forbidden;
 
+        comment.Delete();
         await commentRepository.DeleteAsync(comment, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

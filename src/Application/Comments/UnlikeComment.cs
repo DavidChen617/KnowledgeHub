@@ -18,6 +18,10 @@ public class UnlikeCommentHandler(ICommentRepository commentRepository, IUnitOfW
         var like = await commentRepository.FindLikeAsync(command.CommentId, command.UserId, cancellationToken);
         if (like is null) return NotFound;
 
+        var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
+        if (comment is null) return NotFound;
+
+        comment.Unlike();
         await commentRepository.DeleteLikeAsync(like, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

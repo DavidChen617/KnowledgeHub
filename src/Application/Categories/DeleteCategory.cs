@@ -24,6 +24,7 @@ public class DeleteCategoryHandler(ICategoryRepository categoryRepository, IUnit
         if (await categoryRepository.IsInUseAsync(command.CategoryId, cancellationToken))
             return InUse;
 
+        category.Delete();
         await categoryRepository.DeleteAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
