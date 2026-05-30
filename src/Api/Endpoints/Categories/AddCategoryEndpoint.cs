@@ -1,7 +1,6 @@
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
-using Domain.Exceptions;
 using Domain.Users;
 
 namespace Api.Endpoints.Categories;

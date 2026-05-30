@@ -1,5 +1,5 @@
 using Domain.AI;
-using Domain.Exceptions;
+using Infrastructure.Exceptions;
 
 namespace Infrastructure.ImageDescription;
 
