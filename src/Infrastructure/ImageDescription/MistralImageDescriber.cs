@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.ImageDescription;
 
@@ -7,7 +8,7 @@ public class MistralImageDescriber(HttpClient httpClient, IHttpClientFactory htt
 {
     private const string Model = "pixtral-large-latest";
 
-    public override async Task<string> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
+    public override async Task<Result<string>> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
     {
         try
         {
@@ -41,7 +42,7 @@ public class MistralImageDescriber(HttpClient httpClient, IHttpClientFactory htt
             var result = await response.Content.ReadFromJsonAsync<MistralResponse>(ct)
                 ?? throw new HttpRequestException("Mistral returned empty response.");
 
-            return result.Choices[0].Message.Content;
+            return Result.Success(result.Choices[0].Message.Content);
         }
         catch
         {

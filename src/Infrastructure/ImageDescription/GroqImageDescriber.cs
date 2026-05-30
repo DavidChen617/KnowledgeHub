@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.ImageDescription;
 
@@ -7,7 +8,7 @@ public class GroqImageDescriber(HttpClient httpClient, IHttpClientFactory httpCl
 {
     private const string Model = "meta-llama/llama-4-scout-17b-16e-instruct";
 
-    public override async Task<string> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
+    public override async Task<Result<string>> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
     {
         try
         {
@@ -41,7 +42,7 @@ public class GroqImageDescriber(HttpClient httpClient, IHttpClientFactory httpCl
             var result = await response.Content.ReadFromJsonAsync<GroqResponse>(ct)
                 ?? throw new HttpRequestException("Groq returned empty response.");
 
-            return result.Choices[0].Message.Content;
+            return Result.Success(result.Choices[0].Message.Content);
         }
         catch
         {

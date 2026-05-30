@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.ImageDescription;
 
@@ -7,7 +8,7 @@ public class OpenRouterImageDescriber(HttpClient httpClient) : ImageDescriberHan
 {
     private const string Model = "openrouter/auto";
 
-    public override async Task<string> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
+    public override async Task<Result<string>> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
     {
         try
         {
@@ -37,7 +38,7 @@ public class OpenRouterImageDescriber(HttpClient httpClient) : ImageDescriberHan
             var result = await response.Content.ReadFromJsonAsync<OpenRouterResponse>(ct)
                 ?? throw new HttpRequestException("OpenRouter returned empty response.");
 
-            return result.Choices[0].Message.Content;
+            return Result.Success(result.Choices[0].Message.Content);
         }
         catch
         {

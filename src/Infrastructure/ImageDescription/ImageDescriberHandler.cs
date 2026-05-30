@@ -1,5 +1,5 @@
 using Domain.AI;
-using Infrastructure.Exceptions;
+using ShareKernal;
 
 namespace Infrastructure.ImageDescription;
 
@@ -13,12 +13,11 @@ public abstract class ImageDescriberHandler : IImageDescriber
         return next;
     }
 
-    public abstract Task<string> DescribeAsync(string imageUrl, string context, CancellationToken ct = default);
+    public abstract Task<Result<string>> DescribeAsync(string imageUrl, string context, CancellationToken ct = default);
 
-    protected Task<string> TryNextAsync(string imageUrl, string context, CancellationToken ct)
+    protected Task<Result<string>> TryNextAsync(string imageUrl, string context, CancellationToken ct)
     {
-        if (_next is null)
-            throw new AiServiceException("All image describers in the chain exhausted.");
+        if (_next is null) return Task.FromResult(Result.Failure<string>(AiErrors.ChainExhausted));
         return _next.DescribeAsync(imageUrl, context, ct);
     }
 }

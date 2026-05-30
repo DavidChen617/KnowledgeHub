@@ -29,14 +29,19 @@ public class StructureNoteHandler(
         if (note is null)
             return NotFound;
 
-        var content = await PreprocessImagesAsync(note.Content, cancellationToken);
-        var result = await structurer.StructureAsync(content, command.Prompt, cancellationToken);
-        var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description);
+        var preprocessResult = await PreprocessImagesAsync(note.Content, cancellationToken);
+        if (!preprocessResult.IsSuccess) return preprocessResult.Error;
+
+        var structureResult = await structurer.StructureAsync(preprocessResult.Value, command.Prompt, cancellationToken);
+        if (!structureResult.IsSuccess) return structureResult.Error;
+
+        var structure = note.AddStructure(command.Prompt, structureResult.Value.StructuredContent, structureResult.Value.Description);
 
         var texts = structure.GetChunks();
-        var vectors = await embedder.EmbedBatchAsync(texts, cancellationToken);
-        
-        structure.SetEmbedding(vectors);
+        var vectorsResult = await embedder.EmbedBatchAsync(texts, cancellationToken);
+        if (!vectorsResult.IsSuccess) return vectorsResult.Error;
+
+        structure.SetEmbedding(vectorsResult.Value);
 
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -44,7 +49,7 @@ public class StructureNoteHandler(
         return Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
     }
 
-    private async Task<string> PreprocessImagesAsync(NoteContent noteContent, CancellationToken ct)
+    private async Task<Result<string>> PreprocessImagesAsync(NoteContent noteContent, CancellationToken ct)
     {
         if (noteContent.ImageUrls.Count == 0) return noteContent.Value;
 
@@ -52,8 +57,9 @@ public class StructureNoteHandler(
         foreach (var url in noteContent.ImageUrls)
         {
             var context = noteContent.GetSurroundingContext(url);
-            var description = await imageDescriber.DescribeAsync(url, context, ct);
-            text = NoteContent.ReplaceImageWithDescription(text, url, description);
+            var describeResult = await imageDescriber.DescribeAsync(url, context, ct);
+            if (!describeResult.IsSuccess) return describeResult.Error;
+            text = NoteContent.ReplaceImageWithDescription(text, url, describeResult.Value);
         }
 
         return text;

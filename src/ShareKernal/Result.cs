@@ -1,6 +1,6 @@
 namespace ShareKernal;
 
-public enum ErrorType { NotFound, Forbidden, Conflict, Validation }
+public enum ErrorType { NotFound, Forbidden, Conflict, Validation, ServiceUnavailable }
 
 public record Error(string Code, string Description, ErrorType Type = ErrorType.Validation)
 {

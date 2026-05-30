@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.Embedding;
 
@@ -8,7 +9,7 @@ public class GeminiEmbedder(HttpClient httpClient) : EmbedderHandler
     private const string Model = "gemini-embedding-001";
     private const int Dimension = 1024;
 
-    public override async Task<float[]> EmbedAsync(string text, CancellationToken ct = default)
+    public override async Task<Result<float[]>> EmbedAsync(string text, CancellationToken ct = default)
     {
         try
         {
@@ -28,7 +29,7 @@ public class GeminiEmbedder(HttpClient httpClient) : EmbedderHandler
             var result = await response.Content.ReadFromJsonAsync<EmbedResponse>(ct)
                 ?? throw new HttpRequestException("Gemini returned empty response.");
 
-            return result.Embedding.Values;
+            return Result.Success(result.Embedding.Values);
         }
         catch
         {
@@ -36,7 +37,7 @@ public class GeminiEmbedder(HttpClient httpClient) : EmbedderHandler
         }
     }
 
-    public override async Task<float[][]> EmbedBatchAsync(IReadOnlyList<string> texts, CancellationToken ct = default)
+    public override async Task<Result<float[][]>> EmbedBatchAsync(IReadOnlyList<string> texts, CancellationToken ct = default)
     {
         try
         {
@@ -59,7 +60,7 @@ public class GeminiEmbedder(HttpClient httpClient) : EmbedderHandler
             var result = await response.Content.ReadFromJsonAsync<BatchEmbedResponse>(ct)
                 ?? throw new HttpRequestException("Gemini returned empty response.");
 
-            return result.Embeddings.Select(e => e.Values).ToArray();
+            return Result.Success(result.Embeddings.Select(e => e.Values).ToArray());
         }
         catch
         {

@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Domain.AI;
-using Infrastructure.Exceptions;
+using ShareKernal;
 
 namespace Infrastructure.NoteStructure;
 
@@ -29,7 +29,7 @@ public abstract class NoteStructurerHandler : INoteStructurer
         return next;
     }
 
-    public async Task<NoteStructureResult> StructureAsync(string content, string userPrompt, CancellationToken ct = default)
+    public async Task<Result<NoteStructureResult>> StructureAsync(string content, string userPrompt, CancellationToken ct = default)
     {
         try
         {
@@ -58,7 +58,7 @@ public abstract class NoteStructurerHandler : INoteStructurer
             var dto = JsonSerializer.Deserialize<NoteStructureDto>(ExtractJson(json), JsonOptions)
                 ?? throw new HttpRequestException($"{GetType().Name} returned unparseable JSON.");
 
-            return new NoteStructureResult(dto.Description, dto.StructuredContent);
+            return Result.Success(new NoteStructureResult(dto.Description, dto.StructuredContent));
         }
         catch
         {
@@ -66,9 +66,9 @@ public abstract class NoteStructurerHandler : INoteStructurer
         }
     }
 
-    protected Task<NoteStructureResult> TryNextAsync(string content, string userPrompt, CancellationToken ct)
+    protected Task<Result<NoteStructureResult>> TryNextAsync(string content, string userPrompt, CancellationToken ct)
     {
-        if (_next is null) throw new AiServiceException("All note structurers in the chain exhausted.");
+        if (_next is null) return Task.FromResult(Result.Failure<NoteStructureResult>(AiErrors.ChainExhausted));
         return _next.StructureAsync(content, userPrompt, ct);
     }
 

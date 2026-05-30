@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.ImageDescription;
 
@@ -7,7 +8,7 @@ public class GeminiImageDescriber(HttpClient httpClient, IHttpClientFactory http
 {
     private const string Model = "gemini-2.5-flash";
 
-    public override async Task<string> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
+    public override async Task<Result<string>> DescribeAsync(string imageUrl, string context, CancellationToken ct = default)
     {
         try
         {
@@ -40,7 +41,7 @@ public class GeminiImageDescriber(HttpClient httpClient, IHttpClientFactory http
             var result = await response.Content.ReadFromJsonAsync<GeminiResponse>(ct)
                 ?? throw new HttpRequestException("Gemini returned empty response.");
 
-            return result.Candidates[0].Content.Parts[0].Text;
+            return Result.Success(result.Candidates[0].Content.Parts[0].Text);
         }
         catch
         {

@@ -1,16 +1,17 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using ShareKernal;
 
 namespace Infrastructure.Embedding;
 
 public class MistralEmbedder(HttpClient httpClient) : EmbedderHandler
 {
-    public override async Task<float[]> EmbedAsync(string text, CancellationToken ct = default)
+    public override async Task<Result<float[]>> EmbedAsync(string text, CancellationToken ct = default)
     {
         try
         {
             var result = await CallApiAsync([text], ct);
-            return result[0];
+            return Result.Success(result[0]);
         }
         catch
         {
@@ -18,11 +19,11 @@ public class MistralEmbedder(HttpClient httpClient) : EmbedderHandler
         }
     }
 
-    public override async Task<float[][]> EmbedBatchAsync(IReadOnlyList<string> texts, CancellationToken ct = default)
+    public override async Task<Result<float[][]>> EmbedBatchAsync(IReadOnlyList<string> texts, CancellationToken ct = default)
     {
         try
         {
-            return await CallApiAsync(texts, ct);
+            return Result.Success(await CallApiAsync(texts, ct));
         }
         catch
         {

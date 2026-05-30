@@ -3,16 +3,19 @@ using Domain.Users;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
+using ShareKernal;
 using DN = Domain.Notes;
 
 namespace Infrastructure.Search;
 
 internal sealed class NoteSearcher(AppDbContext db, IEmbedder embedder) : INoteSearcher
 {
-    public async Task<IReadOnlyList<NoteSearchResult>> SearchAsync(UserId userId, string query, CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<NoteSearchResult>>> SearchAsync(UserId userId, string query, CancellationToken ct = default)
     {
-        var queryVector = await embedder.EmbedAsync(query, ct);
-        var pgVector = new Vector(queryVector);
+        var embedResult = await embedder.EmbedAsync(query, ct);
+        if (!embedResult.IsSuccess) return embedResult.Error;
+
+        var pgVector = new Vector(embedResult.Value);
 
         var results = await db.Database.SqlQuery<NoteSearchRow>($"""
             SELECT n.id AS "NoteId", n.title AS "Title",
@@ -28,9 +31,8 @@ internal sealed class NoteSearcher(AppDbContext db, IEmbedder embedder) : INoteS
             """)
             .ToListAsync(ct);
 
-        return results
-            .Select(r => new NoteSearchResult(new DN.NoteId(r.NoteId), r.Title, 1f - r.Distance))
-            .ToList();
+        return Result.Success<IReadOnlyList<NoteSearchResult>>(
+            results.Select(r => new NoteSearchResult(new DN.NoteId(r.NoteId), r.Title, 1f - r.Distance)).ToList());
     }
 
     private sealed record NoteSearchRow(Guid NoteId, string Title, float Distance);

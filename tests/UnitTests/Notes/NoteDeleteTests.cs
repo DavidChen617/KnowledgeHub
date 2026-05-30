@@ -69,8 +69,8 @@ public class NoteDeleteTests
         Assert.Same(note, ownerRepo.DeletedNote);
 
         var deletedEvent = Assert.Single(note.DomainEvents.OfType<NoteDeletedEvent>());
-        Assert.Equal(note.Id, deletedEvent.NoteId);
-        Console.WriteLine($"[4] 擁有者刪除成功，NoteDeletedEvent 觸發（NoteId: {deletedEvent.NoteId.Value}）");
+        Assert.Equal(note.Id.Value, deletedEvent.NoteId);
+        Console.WriteLine($"[4] 擁有者刪除成功，NoteDeletedEvent 觸發（NoteId: {deletedEvent.NoteId}）");
     }
 }
 
