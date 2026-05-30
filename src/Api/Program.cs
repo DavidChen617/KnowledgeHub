@@ -103,6 +103,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapEndpoints();
-app.UseRouting();
 
 app.Run();
