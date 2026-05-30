@@ -127,7 +127,7 @@ public class StructureNoteTests
         Console.WriteLine($"\n[4] Chunk 數量：{structure.Chunks.Count}");
 
         // --- 5. Embedding（直接打 Cohere，不走 chain 避免錯誤被吞）---
-        var texts = structure.Chunks.Select(c => c.Artifact).ToList();
+        var texts = structure.Chunks.Select(c => c.Value).ToList();
 
         using var embedReq = new HttpRequestMessage(HttpMethod.Post, "embed");
         embedReq.Content = System.Net.Http.Json.JsonContent.Create(new

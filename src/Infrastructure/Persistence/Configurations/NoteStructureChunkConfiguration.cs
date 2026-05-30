@@ -26,8 +26,8 @@ internal sealed class NoteStructureChunkConfiguration : IEntityTypeConfiguration
             .IsRequired()
             .HasComment("Chunk 在結構化內容中的順序索引（從 0 開始）");
 
-        builder.Property(c => c.Artifact)
-            .HasColumnName("artifact")
+        builder.Property(c => c.Value)
+            .HasColumnName("value")
             .IsRequired()
             .HasComment("Chunk 的純文字內容，用於 embedding");
 

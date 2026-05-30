@@ -22,7 +22,8 @@ public class NoteStructure : Entity<Guid>
         Description = description;
     }
 
-    public static NoteStructure Create(NoteId noteId, string prompt, string content, string description, IReadOnlyList<(int Index, string Text)> chunks)
+    public static NoteStructure Create(NoteId noteId, string prompt, string content, string description,
+        IReadOnlyList<(int Index, string Text)> chunks)
     {
         var structure = new NoteStructure(Guid.NewGuid(), noteId, prompt, content, description);
 
@@ -30,5 +31,14 @@ public class NoteStructure : Entity<Guid>
             structure._chunks.Add(Chunk<string>.Create(index, text));
 
         return structure;
+    }
+
+    public List<string> GetChunks() =>
+        Chunks.Select(c => c.Value).ToList();
+
+    public void SetEmbedding(float[][] vector)
+    {
+        for (var i = 0; i < Chunks.Count; ++i)
+            Chunks[i].SetEmbedding(vector[i]);
     }
 }
