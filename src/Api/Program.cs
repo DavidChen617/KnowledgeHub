@@ -18,13 +18,14 @@ builder.Services.AddOpenApi(options =>
     options.AddOperationTransformer((operation, _, ct) =>
     {
         operation.Parameters ??= [];
-        operation.Parameters.Insert(0, new OpenApiParameter
-        {
-            Name = "Authorization",
-            In = ParameterLocation.Header,
-            Required = false,
-            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
-        });
+        operation.Parameters.Insert(0,
+            new OpenApiParameter
+            {
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Required = false,
+                Schema = new OpenApiSchema { Type = JsonSchemaType.String }
+            });
         return Task.CompletedTask;
     });
 });
@@ -47,11 +48,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnTokenValidated = async ctx =>
             {
                 var sub = ctx.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(sub, out var guid)) { ctx.Fail("Invalid sub"); return; }
+                if (!Guid.TryParse(sub, out var guid))
+                {
+                    ctx.Fail("Invalid sub");
+                    return;
+                }
 
                 var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
                 var user = await repo.GetByIdAsync(new UserId(guid));
-                if (user is null) { ctx.Fail("User not found"); return; }
+                if (user is null)
+                {
+                    ctx.Fail("User not found");
+                    return;
+                }
 
                 ctx.HttpContext.Items["CurrentUser"] = user;
             },
@@ -75,14 +84,33 @@ builder.Services.AddScoped<User>(sp =>
 builder.Services.AddDispatching([typeof(AddNoteHandler).Assembly]);
 builder.Services.AddEndpoints([typeof(NotesGroup).Assembly]);
 builder.Services.AddInfrastructure(builder.Configuration, typeof(NoteDeletedEventHandler).Assembly);
-
+builder.Services.AddCors(o =>
+{
+    o.AddPolicy("CorsPolicy", p =>
+    {
+        p.WithOrigins("http://localhost:8080")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
 
 app.MapOpenApi();
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapEndpoints();
+app.Use(async (ctx, next) =>
+{
+    var fs = ctx.Features;
+    foreach (var f in fs)
+    {
+        Console.WriteLine("Key: " + f.Key);
+        Console.WriteLine("Value: " + f.Value);
+    }
 
+    await next();
+});
 app.Run();

@@ -22,3 +22,5 @@ public sealed class GetSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
         return note is null ? Results.NotFound() : Results.Ok(note);
     }
 }
+
+
