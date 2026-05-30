@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
+using Domain.Shared;
 
 namespace Domain.Notes;
 
-public sealed class NoteContent
+public sealed class NoteContent : ValueObject
 {
     private static readonly Regex LinkPattern  = new(@"\[\[([^\[\]]+)\]\]",      RegexOptions.Compiled);
     private static readonly Regex ImagePattern = new(@"!\[[^\]]*\]\(([^)]+)\)", RegexOptions.Compiled);
@@ -59,10 +60,10 @@ public sealed class NoteContent
         return result.ToList();
     }
 
+    protected override IEnumerable<object> GetEqualityComponents() { yield return Value; }
+
     public static implicit operator string(NoteContent content) => content.Value;
     public static implicit operator NoteContent(string value) => new(value);
 
     public override string ToString() => Value;
-    public override bool Equals(object? obj) => obj is NoteContent other && Value == other.Value;
-    public override int GetHashCode() => Value.GetHashCode();
 }
