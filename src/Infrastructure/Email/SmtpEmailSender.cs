@@ -3,7 +3,7 @@ using System.Net.Mail;
 using Domain.Notifications;
 using Microsoft.Extensions.Configuration;
 
-namespace Infrastructure.Notifications;
+namespace Infrastructure.Email;
 
 public sealed class SmtpEmailSender(IConfiguration configuration) : IEmailSender
 {
@@ -19,8 +19,14 @@ public sealed class SmtpEmailSender(IConfiguration configuration) : IEmailSender
         client.EnableSsl = true;
         client.Credentials = new NetworkCredential(username, password);
 
-        using var message = new MailMessage(from, to, subject, htmlBody);
-        message.IsBodyHtml = true;
+        using var message = new MailMessage
+        {
+            From = new MailAddress(username, from),
+            To = { to },
+            Subject = subject,
+            Body = htmlBody,
+            IsBodyHtml = true
+        };
 
         await client.SendMailAsync(message, ct);
     }

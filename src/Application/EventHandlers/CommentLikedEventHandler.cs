@@ -14,11 +14,11 @@ public sealed class CommentLikedEventHandler(
 {
     public async Task HandleAsync(CommentLikedEvent @event, CancellationToken cancellationToken = default)
     {
-        var comment = await commentRepository.GetByIdAsync(@event.CommentId, cancellationToken);
-        if (comment is null || Equals(comment.UserId, @event.UserId)) return;
+        var comment = await commentRepository.GetByIdAsync(new CommentId(@event.CommentId), cancellationToken);
+        if (comment is null || comment.UserId == new UserId(@event.UserId)) return;
 
         var commentAuthor = await userRepository.GetByIdAsync(comment.UserId, cancellationToken);
-        var liker = await userRepository.GetByIdAsync(@event.UserId, cancellationToken);
+        var liker = await userRepository.GetByIdAsync(new UserId(@event.UserId), cancellationToken);
         if (commentAuthor is null || liker is null) return;
 
         await emailSender.SendAsync(
