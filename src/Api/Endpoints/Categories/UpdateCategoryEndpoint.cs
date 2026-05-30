@@ -1,9 +1,9 @@
+using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Categories;
 using Domain.Users;
-using ShareKernal;
 
 namespace Api.Endpoints.Categories;
 
@@ -29,14 +29,7 @@ public sealed class UpdateCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 
         var result = await dispatcher.Send(new UpdateCategoryCommandRequest(new CategoryId(id), currentUser.Id, req.Name), ct);
 
-        if (!result.IsSuccess)
-            return result.Error.Type switch
-            {
-                ErrorType.NotFound => Results.NotFound(),
-                _ => Results.Conflict(new { error = result.Error.Description })
-            };
-
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 }
 

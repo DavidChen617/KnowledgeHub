@@ -1,8 +1,8 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Users;
-using ShareKernal;
 
 namespace Api.Endpoints.Notes;
 
@@ -25,10 +25,6 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(new SearchQueryRequest(currentUser.Id, q), ct);
-
-        if (!result.IsSuccess)
-            return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, detail: result.Error.Description);
-
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 }

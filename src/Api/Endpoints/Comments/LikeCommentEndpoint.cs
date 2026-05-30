@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -27,7 +28,6 @@ public sealed class LikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
 
         var result = await dispatcher.Send(new LikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Conflict ? Results.Conflict() : Results.NotFound();
+        return result.ToNoContent();
     }
 }

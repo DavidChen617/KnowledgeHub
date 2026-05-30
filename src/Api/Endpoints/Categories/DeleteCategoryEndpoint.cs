@@ -1,9 +1,9 @@
+using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Categories;
 using Domain.Users;
-using ShareKernal;
 
 namespace Api.Endpoints.Categories;
 
@@ -28,13 +28,6 @@ public sealed class DeleteCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
 
         var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), currentUser.Id), ct);
 
-        if (!result.IsSuccess)
-            return result.Error.Type switch
-            {
-                ErrorType.NotFound => Results.NotFound(),
-                _ => Results.Conflict(new { error = result.Error.Description })
-            };
-
-        return Results.NoContent();
+        return result.ToNoContent();
     }
 }

@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -25,6 +26,6 @@ public sealed class DeleteSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(new DeleteSharedLinkCommandRequest(new NoteId(id), currentUser.Id), ct);
-        return result.IsSuccess ? Results.NoContent() : Results.NotFound();
+        return result.ToNoContent();
     }
 }

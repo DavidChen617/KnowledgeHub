@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -28,7 +29,7 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new AddNoteCommandRequest(currentUser.Id, req.Title, req.Content ?? string.Empty, categoryId), ct);
 
-        return Results.Created($"/api/notes/{result.Value.NoteId}", result.Value);
+        return result.ToHttpResult(v => Results.Created($"/api/notes/{v.NoteId}", v));
     }
 }
 

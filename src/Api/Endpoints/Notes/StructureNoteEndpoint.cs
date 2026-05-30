@@ -1,9 +1,9 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
 using Domain.Notes;
 using Domain.Users;
-using ShareKernal;
 
 namespace Api.Endpoints.Notes;
 
@@ -30,15 +30,7 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new StructureNoteCommandRequest(new NoteId(id), req.Prompt), ct);
 
-        if (!result.IsSuccess)
-            return result.Error.Type switch
-            {
-                ErrorType.NotFound => Results.NotFound(),
-                ErrorType.ServiceUnavailable => Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, detail: result.Error.Description),
-                _ => Results.Problem(detail: result.Error.Description)
-            };
-
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 }
 

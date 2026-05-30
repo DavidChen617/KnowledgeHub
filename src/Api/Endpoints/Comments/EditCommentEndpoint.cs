@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -29,8 +30,7 @@ public sealed class EditCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         var result = await dispatcher.Send(
             new EditCommentCommandRequest(new CommentId(id), currentUser.Id, req.Content), ct);
 
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
+        return result.ToNoContent();
     }
 }
 

@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -27,6 +28,6 @@ public sealed class DeleteNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new DeleteNoteCommandRequest(new NoteId(id), currentUser.Id), ct);
 
-        return result is null ? Results.NotFound() : Results.NoContent();
+        return result.ToNoContent();
     }
 }

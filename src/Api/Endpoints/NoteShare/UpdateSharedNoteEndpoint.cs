@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -23,9 +24,7 @@ public sealed class UpdateSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(new UpdateNoteByTokenCommandRequest(token, req.Content), ct);
-
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
+        return result.ToNoContent();
     }
 }
 

@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -31,7 +32,7 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var result = await dispatcher.Send(
             new UpdateNoteCommandRequest(new NoteId(id), currentUser.Id, req.Title, req.Content, categoryId), ct);
 
-        return result is null ? Results.NotFound() : Results.Ok(result);
+        return result.ToHttpResult();
     }
 }
 

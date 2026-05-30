@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -18,9 +19,7 @@ public sealed class GetSharedNoteEndpoint : IGroupedEndpoint<ShareGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var note = await dispatcher.Send(new GetNoteByTokenQueryRequest(token), ct);
-        return note is null ? Results.NotFound() : Results.Ok(note);
+        var result = await dispatcher.Send(new GetNoteByTokenQueryRequest(token), ct);
+        return result.ToHttpResult();
     }
 }
-
-

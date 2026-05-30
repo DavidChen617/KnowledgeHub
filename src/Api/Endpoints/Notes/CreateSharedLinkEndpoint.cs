@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Notes;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -27,11 +28,11 @@ public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var permission = req.Permission == "readwrite" ? SharePermission.ReadWrite : SharePermission.Read;
-        var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id, permission), ct);
-        if (!result.IsSuccess) return Results.NotFound();
-
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
-        return Results.Ok(new CreateSharedLinkResponse($"{baseUrl}/share/{result.Value.Token}", req.Permission));
+
+        var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id, permission), ct);
+
+        return result.ToHttpResult(v => Results.Ok(new CreateSharedLinkResponse($"{baseUrl}/share/{v.Token}", req.Permission)));
     }
 }
 

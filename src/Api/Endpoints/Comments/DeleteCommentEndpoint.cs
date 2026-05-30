@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Comments;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -28,7 +29,6 @@ public sealed class DeleteCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         var result = await dispatcher.Send(
             new DeleteCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
 
-        if (result.IsSuccess) return Results.NoContent();
-        return result.Error.Type == ShareKernal.ErrorType.Forbidden ? Results.Forbid() : Results.NotFound();
+        return result.ToNoContent();
     }
 }
