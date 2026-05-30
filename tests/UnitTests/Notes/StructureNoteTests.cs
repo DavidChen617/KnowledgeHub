@@ -60,34 +60,6 @@ public class StructureNoteTests
         return client;
     }
 
-    private static IReadOnlyList<(int, string)> HeadingMapper(string content)
-    {
-        if (string.IsNullOrEmpty(content)) return [];
-
-        var chunks = new List<(int, string)>();
-        var currentLines = new List<string>();
-        var index = 0;
-
-        foreach (var line in content.Split('\n'))
-        {
-            if (line.StartsWith("### ") && currentLines.Count > 0)
-            {
-                chunks.Add((index++, string.Join('\n', currentLines).Trim()));
-                currentLines.Clear();
-            }
-            currentLines.Add(line);
-        }
-
-        if (currentLines.Count > 0)
-        {
-            var text = string.Join('\n', currentLines).Trim();
-            if (!string.IsNullOrEmpty(text))
-                chunks.Add((index, text));
-        }
-
-        return chunks;
-    }
-
     [Fact]
     public async Task FullFlow_NoteLifecycle()
     {
@@ -147,8 +119,7 @@ public class StructureNoteTests
         Console.WriteLine($"    描述：{structured.Description}");
 
         // --- 4. Chunk ---
-        var rawChunks = Chunker.Chunk(structured.StructuredContent, HeadingMapper);
-        var structure = note.AddStructure("請將這篇筆記結構化，整理成清楚的重點", structured.StructuredContent, structured.Description, rawChunks);
+        var structure = note.AddStructure("請將這篇筆記結構化，整理成清楚的重點", structured.StructuredContent, structured.Description);
 
         Assert.Single(note.Structures);
         Assert.True(structure.Chunks.Count > 0);

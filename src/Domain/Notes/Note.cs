@@ -9,6 +9,7 @@ namespace Domain.Notes;
 public sealed class NoteId : ValueObject
 {
     public Guid Value { get; }
+    public NoteId() => Value = Guid.NewGuid();
     public NoteId(Guid value) => Value = value;
     public static NoteId New() => new(Guid.NewGuid());
     protected override IEnumerable<object> GetEqualityComponents() { yield return Value; }
@@ -18,26 +19,24 @@ public class Note : AggregateRoot<NoteId>
 {
     public static class Errors
     {
-        public static readonly Error EmptyTitle  = new("Note.EmptyTitle",  "Title cannot be empty",   ErrorType.Validation);
-        public static readonly Error EmptyContent = new("Note.EmptyContent", "Content cannot be empty", ErrorType.Validation);
+        public static readonly Error EmptyTitle = new("Note.EmptyTitle", "Title cannot be empty", ErrorType.Validation);
     }
 
-    private readonly List<NoteId> _linkedNoteIds = [];
     private readonly List<NoteStructure> _structures = [];
     private readonly List<NoteImage> _images = [];
 
     public UserId UserId { get; }
     public string Title { get; private set; }
-    public string Content { get; private set; }
+    public NoteContent Content { get; private set; }
     public CategoryId? CategoryId { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public SharedLink? SharedLink { get; private set; }
 
-    public IReadOnlyList<NoteId> LinkedNoteIds => _linkedNoteIds;
+    public IReadOnlyList<NoteId> LinkedNoteIds => Content.LinkedNoteIds;
     public IReadOnlyList<NoteStructure> Structures => _structures;
     public IReadOnlyList<NoteImage> Images => _images;
 
-    private Note(NoteId id, UserId userId, string title, string content) : base(id)
+    private Note(NoteId id, UserId userId, string title, NoteContent content) : base(id)
     {
         UserId = userId;
         Title = title;
@@ -49,17 +48,15 @@ public class Note : AggregateRoot<NoteId>
     {
         if (string.IsNullOrWhiteSpace(title)) return Errors.EmptyTitle;
 
-        var note = new Note(NoteId.New(), userId, title, content);
-        note.SyncLinks();
+        var note = new Note(NoteId.New(), userId, title, new NoteContent(content));
         note.SyncImages();
         return Result.Success(note);
     }
 
     public Result UpdateContent(string content)
     {
-        Content = content;
+        Content = new NoteContent(content);
         UpdatedAt = DateTime.UtcNow;
-        SyncLinks();
         SyncImages();
         return Result.Success();
     }
@@ -79,12 +76,41 @@ public class Note : AggregateRoot<NoteId>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public NoteStructure AddStructure(string prompt, string content, string description, IReadOnlyList<(int Index, string Text)> chunks)
+    public NoteStructure AddStructure(string prompt, string content, string description)
     {
+        var chunks = ChunkByHeadings(content);
         var structure = NoteStructure.Create(Id, prompt, content, description, chunks);
         _structures.Add(structure);
         UpdatedAt = DateTime.UtcNow;
         return structure;
+    }
+
+    private static IReadOnlyList<(int, string)> ChunkByHeadings(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return [];
+
+        var chunks = new List<(int, string)>();
+        var currentLines = new List<string>();
+        var index = 0;
+
+        foreach (var line in content.Split('\n'))
+        {
+            if (line.StartsWith("### ") && currentLines.Count > 0)
+            {
+                chunks.Add((index++, string.Join('\n', currentLines).Trim()));
+                currentLines.Clear();
+            }
+            currentLines.Add(line);
+        }
+
+        if (currentLines.Count > 0)
+        {
+            var text = string.Join('\n', currentLines).Trim();
+            if (!string.IsNullOrEmpty(text))
+                chunks.Add((index, text));
+        }
+
+        return chunks;
     }
 
     public SharedLink CreateSharedLink(SharePermission permission)
@@ -106,21 +132,9 @@ public class Note : AggregateRoot<NoteId>
         RaiseDomainEvent(new NoteDeletedEvent(Id, imageUrls));
     }
 
-    private void SyncLinks()
-    {
-        var parsed = NoteParser.ParseNoteLinks(Content);
-        var next = parsed.Select(g => new NoteId(g)).ToList();
-        var diff = NoteLinkDiffer.Diff(_linkedNoteIds, next);
-
-        foreach (var id in diff.ToRemove)
-            _linkedNoteIds.Remove(id);
-
-        _linkedNoteIds.AddRange(diff.ToAdd);
-    }
-
     private void SyncImages()
     {
-        var parsed = NoteImageParser.ParseImageUrls(Content).ToHashSet();
+        var parsed = Content.ImageUrls.ToHashSet();
 
         var toDisable = _images.Where(img => img.Enable && !parsed.Contains(img.PublicUrl)).ToList();
         foreach (var img in toDisable)

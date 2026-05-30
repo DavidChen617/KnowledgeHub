@@ -12,6 +12,8 @@ internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
     {
         builder.ToTable("notes");
 
+        builder.Ignore(n => n.LinkedNoteIds);
+
         builder.HasKey(n => n.Id);
         builder.Property(n => n.Id)
             .HasConversion(id => id.Value, value => new NoteId(value))
@@ -31,6 +33,7 @@ internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
             .HasComment("筆記標題");
 
         builder.Property(n => n.Content)
+            .HasConversion(c => c.Value, v => new NoteContent(v))
             .HasColumnName("content")
             .IsRequired()
             .HasComment("筆記原始內容（Markdown）");
@@ -70,17 +73,6 @@ internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
                 .HasMaxLength(16)
                 .HasComment("分享連結權限；Read 或 ReadWrite；NULL 表示尚未建立分享連結");
         });
-
-        builder.OwnsMany<NoteId>(n => n.LinkedNoteIds, nl =>
-        {
-            nl.ToTable("note_links", t => t.HasComment("筆記間的引用關聯，對應 [[noteId]] 語法"));
-            nl.WithOwner().HasForeignKey("note_id");
-            nl.Property(id => id.Value)
-                .HasColumnName("linked_note_id")
-                .HasComment("被引用的筆記 ID");
-            nl.HasKey("note_id", "Value");
-        });
-        builder.Navigation(n => n.LinkedNoteIds).HasField("_linkedNoteIds");
 
         builder.HasMany(n => n.Structures)
             .WithOne()

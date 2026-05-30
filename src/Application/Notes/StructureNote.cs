@@ -31,8 +31,7 @@ public class StructureNoteHandler(
 
         var content = await PreprocessImagesAsync(note.Content, cancellationToken);
         var result = await structurer.StructureAsync(content, command.Prompt, cancellationToken);
-        var chunks = Chunker.Chunk(result.StructuredContent, HeadingMapper);
-        var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description, chunks);
+        var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description);
 
         var texts = structure.Chunks.Select(c => c.Artifact).ToList();
         var vectors = await embedder.EmbedBatchAsync(texts, cancellationToken);
@@ -46,47 +45,18 @@ public class StructureNoteHandler(
         return Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
     }
 
-    private async Task<string> PreprocessImagesAsync(string content, CancellationToken ct)
+    private async Task<string> PreprocessImagesAsync(NoteContent noteContent, CancellationToken ct)
     {
-        var imageUrls = NoteImageParser.ParseImageUrls(content);
-        if (imageUrls.Count == 0) return content;
+        if (noteContent.ImageUrls.Count == 0) return noteContent.Value;
 
-        foreach (var url in imageUrls)
+        var text = noteContent.Value;
+        foreach (var url in noteContent.ImageUrls)
         {
-            var context = NoteImageParser.GetSurroundingContext(content, url);
+            var context = noteContent.GetSurroundingContext(url);
             var description = await imageDescriber.DescribeAsync(url, context, ct);
-            content = NoteImageParser.ReplaceImageWithDescription(content, url, description);
+            text = NoteContent.ReplaceImageWithDescription(text, url, description);
         }
 
-        return content;
-    }
-
-    private static IReadOnlyList<(int, string)> HeadingMapper(string content)
-    {
-        if (string.IsNullOrEmpty(content)) return [];
-
-        var chunks = new List<(int, string)>();
-        var currentLines = new List<string>();
-        var index = 0;
-
-        foreach (var line in content.Split('\n'))
-        {
-            if (line.StartsWith("### ") && currentLines.Count > 0)
-            {
-                chunks.Add((index++, string.Join('\n', currentLines).Trim()));
-                currentLines.Clear();
-            }
-
-            currentLines.Add(line);
-        }
-
-        if (currentLines.Count > 0)
-        {
-            var text = string.Join('\n', currentLines).Trim();
-            if (!string.IsNullOrEmpty(text))
-                chunks.Add((index, text));
-        }
-
-        return chunks;
+        return text;
     }
 }
