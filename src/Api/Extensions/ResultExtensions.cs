@@ -8,7 +8,7 @@ public static class ResultExtensions
         => result.IsSuccess ? onSuccess(result.Value) : result.Error.ToProblem();
 
     public static IResult ToHttpResult<T>(this Result<T> result)
-        => result.ToHttpResult(v => Results.Ok(v));
+        => result.ToHttpResult(v => Results.Ok(Response.Ok(v)));
 
     public static IResult ToNoContent(this Result result)
         => result.IsSuccess ? Results.NoContent() : result.Error.ToProblem();

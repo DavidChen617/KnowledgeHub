@@ -1,3 +1,4 @@
+using Api.Extensions;
 using Application.Categories;
 using CoreMesh.Dispatching.Abstractions;
 using CoreMesh.Endpoints;
@@ -24,8 +25,7 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
         if (currentUser is null) return Results.Unauthorized();
 
         var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
-        if (!result.IsSuccess) return Results.Conflict(new { error = result.Error.Description });
-        return Results.Created($"/api/categories/{result.Value.CategoryId}", result.Value);
+        return result.ToHttpResult(v => Results.Created($"/api/categories/{v.CategoryId}", Response.Ok(v)));
     }
 }
 
