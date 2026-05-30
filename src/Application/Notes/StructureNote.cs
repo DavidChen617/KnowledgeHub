@@ -33,11 +33,10 @@ public class StructureNoteHandler(
         var result = await structurer.StructureAsync(content, command.Prompt, cancellationToken);
         var structure = note.AddStructure(command.Prompt, result.StructuredContent, result.Description);
 
-        var texts = structure.Chunks.Select(c => c.Artifact).ToList();
+        var texts = structure.GetChunks();
         var vectors = await embedder.EmbedBatchAsync(texts, cancellationToken);
-
-        for (var i = 0; i < structure.Chunks.Count; ++i)
-            structure.Chunks[i].SetEmbedding(vectors[i]);
+        
+        structure.SetEmbedding(vectors);
 
         await noteRepository.UpdateAsync(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

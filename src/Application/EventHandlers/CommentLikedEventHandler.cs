@@ -9,21 +9,22 @@ namespace Application.EventHandlers;
 public sealed class CommentLikedEventHandler(
     ICommentRepository commentRepository,
     IUserRepository userRepository,
-    IPushNotificationSender pushSender)
+    IEmailSender emailSender)
     : IEventHandler<CommentLikedEvent>
 {
     public async Task HandleAsync(CommentLikedEvent @event, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(@event.CommentId, cancellationToken);
-        if (comment is null || comment.UserId == @event.UserId) return;
+        if (comment is null || Equals(comment.UserId, @event.UserId)) return;
 
+        var commentAuthor = await userRepository.GetByIdAsync(comment.UserId, cancellationToken);
         var liker = await userRepository.GetByIdAsync(@event.UserId, cancellationToken);
-        if (liker is null) return;
+        if (commentAuthor is null || liker is null) return;
 
-        await pushSender.SendAsync(
-            comment.UserId,
+        await emailSender.SendAsync(
+            commentAuthor.Email,
             $"{liker.Username} 按讚了你的留言",
-            comment.Content,
+            $"<p>{liker.Username} 按讚了你的留言：{comment.Content}</p>",
             cancellationToken);
     }
 }
