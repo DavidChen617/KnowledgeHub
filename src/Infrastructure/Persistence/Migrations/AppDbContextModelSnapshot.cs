@@ -276,6 +276,12 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasComment("建立時間（UTC）");
 
+                    b.Property<string>("SharedLinkToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("shared_link_token")
+                        .HasComment("分享連結 token");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -546,50 +552,6 @@ namespace Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.OwnsOne("Domain.Notes.SharedLink", "SharedLink", b1 =>
-                        {
-                            b1.Property<Guid>("NoteId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Token")
-                                .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)")
-                                .HasColumnName("shared_link_token")
-                                .HasComment("唯讀分享連結 token");
-
-                            b1.HasKey("NoteId");
-
-                            b1.ToTable("notes");
-
-                            b1.WithOwner()
-                                .HasForeignKey("NoteId");
-                        });
-
-                    b.OwnsOne("Domain.Notes.SharedLink", "SharedLinkReadWrite", b1 =>
-                        {
-                            b1.Property<Guid>("NoteId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Token")
-                                .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)")
-                                .HasColumnName("shared_link_rw_token")
-                                .HasComment("可編輯分享連結 token");
-
-                            b1.HasKey("NoteId");
-
-                            b1.ToTable("notes");
-
-                            b1.WithOwner()
-                                .HasForeignKey("NoteId");
-                        });
-
-                    b.Navigation("SharedLink");
-
-                    b.Navigation("SharedLinkReadWrite");
                 });
 
             modelBuilder.Entity("Domain.Notes.NoteImage", b =>
