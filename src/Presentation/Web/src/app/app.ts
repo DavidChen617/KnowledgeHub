@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SearchOverlayComponent } from './features/search/search-overlay';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styles: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterOutlet, SearchOverlayComponent],
+  template: `
+    <router-outlet />
+    <search-overlay />
+  `,
 })
-export class App {
-  protected readonly title = signal('Web');
-}
+export class App {}
