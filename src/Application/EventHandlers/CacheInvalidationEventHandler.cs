@@ -76,12 +76,6 @@ public sealed class CategoryDeletedCacheHandler(ICacher cacher) : IEventHandler<
             cacher.RemoveAsync(CacheKeys.NoteGraph(@event.UserId), ct));
 }
 
-public sealed class CommentCreatedCacheHandler(ICacher cacher) : IEventHandler<CommentCreatedEvent>
-{
-    public async Task HandleAsync(CommentCreatedEvent @event, CancellationToken ct = default) =>
-        await cacher.RemoveAsync(CacheKeys.Comments(@event.NoteId), ct);
-}
-
 public sealed class CommentEditedCacheHandler(ICacher cacher) : IEventHandler<CommentEditedEvent>
 {
     public async Task HandleAsync(CommentEditedEvent @event, CancellationToken ct = default) =>

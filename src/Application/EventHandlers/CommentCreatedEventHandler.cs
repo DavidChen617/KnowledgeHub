@@ -1,8 +1,9 @@
+using Application.Interfaces;
 using CoreMesh.Outbox.Abstractions;
 using Domain.Comments;
 using Domain.Comments.Events;
-using Domain.Notifications;
 using Domain.Notes;
+using Domain.Notifications;
 using Domain.Users;
 
 namespace Application.EventHandlers;
@@ -11,11 +12,13 @@ public sealed class CommentCreatedEventHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUserRepository userRepository,
-    IEmailSender emailSender)
+    IEmailSender emailSender,
+    ICacher cacher)
     : IEventHandler<CommentCreatedEvent>
 {
     public async Task HandleAsync(CommentCreatedEvent @event, CancellationToken cancellationToken = default)
     {
+        await cacher.RemoveAsync(CacheKeys.Comments(@event.NoteId), cancellationToken);
 
         var note = await noteRepository.GetByIdAsync(new NoteId(@event.NoteId), cancellationToken);
         if (note is null) return;
