@@ -54,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 }
 
                 var repo = ctx.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                var user = await repo.GetByIdAsync(new (guid));
+                var user = await repo.GetByIdAsync(new(guid));
                 if (user is null)
                 {
                     ctx.Fail("User not found");
@@ -87,7 +87,7 @@ builder.Services.AddCors(o =>
 {
     o.AddPolicy("CorsPolicy", p =>
     {
-        p.WithOrigins("http://localhost:8080")
+        p.WithOrigins("http://localhost:8080", "http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

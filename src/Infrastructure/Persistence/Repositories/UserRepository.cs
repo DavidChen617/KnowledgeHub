@@ -30,5 +30,5 @@ internal sealed class UserRepository(AppDbContext db) : IUserRepository
     public async Task AddRefreshTokenAsync(RefreshToken token, CancellationToken ct = default) =>
         await db.RefreshTokens.AddAsync(token, ct);
 
-    public Task UpdateAsync(User user, CancellationToken ct = default) => Task.CompletedTask;
+    public Task Update(User user, CancellationToken ct = default) => Task.CompletedTask;
 }

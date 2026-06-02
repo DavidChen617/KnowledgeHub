@@ -9,5 +9,5 @@ public interface IUserRepository
     Task AddIdentityAsync(UserIdentity identity, CancellationToken ct = default);
     Task AddRefreshTokenAsync(RefreshToken token, CancellationToken ct = default);
     Task<RefreshToken?> FindRefreshTokenByHashAsync(string tokenHash, CancellationToken ct = default);
-    Task UpdateAsync(User user, CancellationToken ct = default);
+    Task Update(User user, CancellationToken ct = default);
 }

@@ -19,20 +19,15 @@ public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
 
     private static async Task<IResult> HandleAsync(
         Guid id,
-        CreateShareRequest req,
         User currentUser,
         HttpContext ctx,
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var permission = req.Permission == "readwrite" ? SharePermission.ReadWrite : SharePermission.Read;
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
-
-        var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id, permission), ct);
-
-        return result.ToHttpResult(v => new CreateSharedLinkResponse($"{baseUrl}/share/{v.Token}", req.Permission));
+        var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id), ct);
+        return result.ToHttpResult(v => new CreateSharedLinkResponse($"{baseUrl}/share/{v.Token}"));
     }
 }
 
-public record CreateShareRequest(string Permission = "read");
-public record CreateSharedLinkResponse(string Url, string Permission);
+public record CreateSharedLinkResponse(string Url);

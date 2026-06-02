@@ -19,7 +19,7 @@ public class DeleteSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork
         if (note is null) return NotFound;
 
         note.DeleteSharedLink();
-        await noteRepository.UpdateAsync(note, cancellationToken);
+        await noteRepository.Update(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success();

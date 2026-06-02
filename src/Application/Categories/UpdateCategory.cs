@@ -30,7 +30,7 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
         var renameResult = category.Rename(command.Name);
         if (!renameResult.IsSuccess) return renameResult.Error;
 
-        await categoryRepository.UpdateAsync(category, cancellationToken);
+        await categoryRepository.Update(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success(new UpdateCategoryCommandResponse(category.Id.Value, category.Name));

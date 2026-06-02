@@ -16,7 +16,7 @@ public class GetByTitleHandler(INoteRepository noteRepository)
         var notes = await noteRepository.SearchByTitleAsync(query.UserId, query.Title, cancellationToken);
 
         var summaries = notes
-            .Select(n => new NoteSummary(n.Id.Value, n.Title, n.UpdatedAt))
+            .Select(n => new NoteSummary(n.Id.Value, n.Title, n.UpdatedAt, n.CategoryId?.Value))
             .ToList();
 
         return new GetByTitleQueryResponse(summaries);

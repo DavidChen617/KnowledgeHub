@@ -10,6 +10,6 @@ public interface INoteRepository
     Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default);
     Task<IReadOnlyList<Note>> SearchByTitleAsync(UserId userId, string title, CancellationToken ct = default);
     Task<Note?> GetBySharedTokenAsync(string token, CancellationToken ct = default);
-    Task UpdateAsync(Note note, CancellationToken ct = default);
+    Task Update(Note note, CancellationToken ct = default);
     Task DeleteAsync(Note note, CancellationToken ct = default);
 }

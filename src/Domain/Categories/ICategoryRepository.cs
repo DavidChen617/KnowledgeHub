@@ -8,7 +8,7 @@ public interface ICategoryRepository
     Task<IReadOnlyList<CategorySummary>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default);
     Task<Category?> GetByIdAndUserIdAsync(CategoryId id, UserId userId, CancellationToken ct = default);
     Task<bool> IsInUseAsync(CategoryId id, CancellationToken ct = default);
-    Task UpdateAsync(Category category, CancellationToken ct = default);
+    Task Update(Category category, CancellationToken ct = default);
     Task DeleteAsync(Category category, CancellationToken ct = default);
 }
 

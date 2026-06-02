@@ -35,7 +35,7 @@ public class GetCommentsHandler(
         if (note is null) return NotFound;
 
         var isOwner = query.UserId is not null && note.UserId == query.UserId;
-        var hasShareAccess = query.ShareToken is not null && note.SharedLink?.Token == query.ShareToken;
+        var hasShareAccess = query.ShareToken is not null && note.SharedLinkToken == query.ShareToken;
 
         if (!isOwner && !hasShareAccess) return Forbidden;
 

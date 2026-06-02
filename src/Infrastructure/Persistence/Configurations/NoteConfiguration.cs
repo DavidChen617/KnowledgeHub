@@ -60,19 +60,10 @@ internal sealed class NoteConfiguration : IEntityTypeConfiguration<Note>
             .IsRequired()
             .HasComment("建立時間（UTC）");
 
-        builder.OwnsOne(n => n.SharedLink, sl =>
-        {
-            sl.Property(s => s.Token)
-                .HasMaxLength(64)
-                .HasColumnName("shared_link_token")
-                .HasComment("分享連結 token；NULL 表示尚未建立分享連結");
-
-            sl.Property(s => s.Permission)
-                .HasColumnName("shared_link_permission")
-                .HasConversion<string>()
-                .HasMaxLength(16)
-                .HasComment("分享連結權限；Read 或 ReadWrite；NULL 表示尚未建立分享連結");
-        });
+        builder.Property(n => n.SharedLinkToken)
+            .HasMaxLength(64)
+            .HasColumnName("shared_link_token")
+            .HasComment("分享連結 token");
 
         builder.HasMany(n => n.Structures)
             .WithOne()

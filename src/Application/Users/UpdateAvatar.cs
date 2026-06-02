@@ -18,7 +18,7 @@ public class UpdateAvatarHandler(IUserRepository userRepository, IUnitOfWork uni
         if (user is null) return NotFound;
 
         user.UpdateAvatar(command.AvatarUrl);
-        await userRepository.UpdateAsync(user, cancellationToken);
+        await userRepository.Update(user, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success();

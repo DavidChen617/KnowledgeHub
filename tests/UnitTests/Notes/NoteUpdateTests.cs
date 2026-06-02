@@ -109,7 +109,7 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
     public Task<Note?> GetByIdAndUserIdAsync(NoteId id, UserId userId, CancellationToken ct = default) =>
         Task.FromResult(returnNote);
 
-    public Task UpdateAsync(Note note, CancellationToken ct = default)
+    public Task Update(Note note, CancellationToken ct = default)
     {
         WasUpdated = true;
         return Task.CompletedTask;

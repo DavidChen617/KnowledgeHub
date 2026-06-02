@@ -30,7 +30,7 @@ public class Note : AggregateRoot<NoteId>
     public NoteContent Content { get; private set; }
     public CategoryId? CategoryId { get; private set; }
     public DateTime UpdatedAt { get; private set; }
-    public SharedLink? SharedLink { get; private set; }
+    public string? SharedLinkToken { get; private set; }
 
     public IReadOnlyList<NoteId> LinkedNoteIds => Content.LinkedNoteIds;
     public IReadOnlyList<NoteStructure> Structures => _structures;
@@ -59,7 +59,7 @@ public class Note : AggregateRoot<NoteId>
         Content = new NoteContent(content);
         UpdatedAt = DateTime.UtcNow;
         SyncImages();
-        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLinkToken));
         return Result.Success();
     }
 
@@ -69,7 +69,7 @@ public class Note : AggregateRoot<NoteId>
 
         Title = title;
         UpdatedAt = DateTime.UtcNow;
-        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLinkToken));
         return Result.Success();
     }
 
@@ -77,7 +77,7 @@ public class Note : AggregateRoot<NoteId>
     {
         CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
-        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLink?.Token));
+        RaiseDomainEvent(new NoteUpdatedEvent(Id.Value, UserId.Value, SharedLinkToken));
     }
 
     public NoteStructure AddStructure(string prompt, string content, string description)
@@ -87,6 +87,52 @@ public class Note : AggregateRoot<NoteId>
         _structures.Add(structure);
         UpdatedAt = DateTime.UtcNow;
         return structure;
+    }
+
+    public string CreateSharedLink()
+    {
+        var token = GenerateToken();
+        SharedLinkToken = token;
+        UpdatedAt = DateTime.UtcNow;
+        RaiseDomainEvent(new SharedLinkCreatedEvent(Id.Value, UserId.Value, SharedLinkToken));
+        return token;
+    }
+
+    public void DeleteSharedLink()
+    {
+        var token = SharedLinkToken;
+        SharedLinkToken = null;
+        UpdatedAt = DateTime.UtcNow;
+        if (token is not null)
+            RaiseDomainEvent(new SharedLinkDeletedEvent(Id.Value, UserId.Value, token));
+    }
+
+    public void Delete()
+    {
+        var imageUrls = _images.Select(img => img.PublicUrl).ToList();
+        RaiseDomainEvent(new NoteDeletedEvent(Id.Value, UserId.Value, imageUrls));
+    }
+
+    private static string GenerateToken() =>
+        Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32))
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
+
+    private void SyncImages()
+    {
+        var parsed = Content.ImageUrls.ToHashSet();
+
+        var toDisable = _images.Where(img => img.Enable && !parsed.Contains(img.PublicUrl)).ToList();
+        foreach (var img in toDisable)
+            img.Disable();
+
+        var existingUrls = _images.Select(img => img.PublicUrl).ToHashSet();
+        foreach (var url in parsed.Where(url => !existingUrls.Contains(url)))
+            _images.Add(NoteImage.Create(Id, url));
+
+        if (toDisable.Count > 0)
+            RaiseDomainEvent(new NoteImagesChangedEvent(Id, toDisable.Select(img => img.PublicUrl).ToList()));
     }
 
     private static IReadOnlyList<(int, string)> ChunkByHeadings(string content)
@@ -115,45 +161,5 @@ public class Note : AggregateRoot<NoteId>
         }
 
         return chunks;
-    }
-
-    public SharedLink CreateSharedLink(SharePermission permission)
-    {
-        var previousToken = SharedLink?.Token;
-        SharedLink = SharedLink.Create(permission);
-        UpdatedAt = DateTime.UtcNow;
-        RaiseDomainEvent(new SharedLinkCreatedEvent(Id.Value, UserId.Value, previousToken));
-        return SharedLink;
-    }
-
-    public void DeleteSharedLink()
-    {
-        if (SharedLink is null) return;
-        var token = SharedLink.Token;
-        SharedLink = null;
-        UpdatedAt = DateTime.UtcNow;
-        RaiseDomainEvent(new SharedLinkDeletedEvent(Id.Value, UserId.Value, token));
-    }
-
-    public void Delete()
-    {
-        var imageUrls = _images.Select(img => img.PublicUrl).ToList();
-        RaiseDomainEvent(new NoteDeletedEvent(Id.Value, UserId.Value, imageUrls));
-    }
-
-    private void SyncImages()
-    {
-        var parsed = Content.ImageUrls.ToHashSet();
-
-        var toDisable = _images.Where(img => img.Enable && !parsed.Contains(img.PublicUrl)).ToList();
-        foreach (var img in toDisable)
-            img.Disable();
-
-        var existingUrls = _images.Select(img => img.PublicUrl).ToHashSet();
-        foreach (var url in parsed.Where(url => !existingUrls.Contains(url)))
-            _images.Add(NoteImage.Create(Id, url));
-
-        if (toDisable.Count > 0)
-            RaiseDomainEvent(new NoteImagesChangedEvent(Id, toDisable.Select(img => img.PublicUrl).ToList()));
     }
 }

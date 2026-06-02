@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Notes;
+using Domain.Users;
 using ShareKernal;
 using static Application.Notes.NoteErrors;
 using static ShareKernal.Result;
@@ -17,9 +18,11 @@ public record GetNoteByTokenQueryResponse(
     DateTime UpdatedAt,
     IReadOnlyList<Guid> LinkedNoteIds,
     IReadOnlyList<string> Images,
-    SharePermission Permission);
+    string AuthorName,
+    string AuthorEmail,
+    string? AuthorAvatarUrl);
 
-public class GetNoteByTokenHandler(INoteRepository noteRepository, ICacher cacher)
+public class GetNoteByTokenHandler(INoteRepository noteRepository, IUserRepository userRepository, ICacher cacher)
     : IRequestHandler<GetNoteByTokenQueryRequest, Result<GetNoteByTokenQueryResponse>>
 {
     public async Task<Result<GetNoteByTokenQueryResponse>> Handle(GetNoteByTokenQueryRequest query, CancellationToken cancellationToken = default)
@@ -32,6 +35,8 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository, ICacher cache
         var note = await noteRepository.GetBySharedTokenAsync(query.Token, cancellationToken);
         if (note is null) return TokenNotFound;
 
+        var author = await userRepository.GetByIdAsync(note.UserId, cancellationToken);
+
         var response = new GetNoteByTokenQueryResponse(
             note.Id.Value,
             note.Title,
@@ -40,7 +45,9 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository, ICacher cache
             note.UpdatedAt,
             note.LinkedNoteIds.Select(id => id.Value).ToList(),
             note.Images.Where(img => img.Enable).Select(img => img.PublicUrl).ToList(),
-            note.SharedLink!.Permission);
+            author?.Username ?? string.Empty,
+            author?.Email ?? string.Empty,
+            author?.AvatarUrl);
 
         await cacher.SetAsync(key, response, TimeSpan.FromMinutes(5), cancellationToken);
 

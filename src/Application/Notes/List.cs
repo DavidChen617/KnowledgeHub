@@ -10,7 +10,7 @@ public record ListQueryRequest(UserId UserId) : IRequest<Result<ListQueryRespons
 
 public record ListQueryResponse(IReadOnlyList<NoteSummary> Notes);
 
-public record NoteSummary(Guid NoteId, string Title, DateTime UpdatedAt);
+public record NoteSummary(Guid NoteId, string Title, DateTime UpdatedAt, Guid? CategoryId);
 
 public class ListHandler(INoteRepository noteRepository, ICacher cacher)
     : IRequestHandler<ListQueryRequest, Result<ListQueryResponse>>
@@ -24,7 +24,7 @@ public class ListHandler(INoteRepository noteRepository, ICacher cacher)
 
         var notes = await noteRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
         var response = new ListQueryResponse(notes
-            .Select(n => new NoteSummary(n.Id.Value, n.Title, n.UpdatedAt))
+            .Select(n => new NoteSummary(n.Id.Value, n.Title, n.UpdatedAt, n.CategoryId?.Value))
             .ToList());
 
         await cacher.SetAsync(key, response, TimeSpan.FromMinutes(5), cancellationToken);

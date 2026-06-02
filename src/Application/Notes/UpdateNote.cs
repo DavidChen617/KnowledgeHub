@@ -36,7 +36,7 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         if (command.CategoryId is not null)
             note.SetCategory(command.CategoryId);
 
-        await noteRepository.UpdateAsync(note, cancellationToken);
+        await noteRepository.Update(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success(new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));

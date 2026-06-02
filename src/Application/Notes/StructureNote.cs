@@ -43,7 +43,7 @@ public class StructureNoteHandler(
 
         structure.SetEmbedding(vectorsResult.Value);
 
-        await noteRepository.UpdateAsync(note, cancellationToken);
+        await noteRepository.Update(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));

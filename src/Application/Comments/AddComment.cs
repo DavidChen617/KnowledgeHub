@@ -28,7 +28,7 @@ public class AddCommentHandler(
         if (note is null) return NotFound;
 
         var isOwner = note.UserId == command.UserId;
-        var hasShareAccess = command.ShareToken is not null && note.SharedLink?.Token == command.ShareToken;
+        var hasShareAccess = command.ShareToken is not null && note.SharedLinkToken == command.ShareToken;
 
         if (!isOwner && !hasShareAccess) return Forbidden;
 
