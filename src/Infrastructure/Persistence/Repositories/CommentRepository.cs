@@ -45,4 +45,14 @@ internal sealed class CommentRepository(AppDbContext db) : ICommentRepository
             .GroupBy(l => l.CommentId)
             .ToDictionaryAsync(g => g.Key, g => g.Count(), ct);
     }
+
+    public async Task<HashSet<CommentId>> GetLikedByUserAsync(IEnumerable<CommentId> commentIds, UserId userId, CancellationToken ct = default)
+    {
+        var ids = commentIds.ToList();
+        var liked = await db.CommentLikes
+            .Where(l => ids.Contains(l.CommentId) && l.UserId == userId)
+            .Select(l => l.CommentId)
+            .ToListAsync(ct);
+        return [.. liked];
+    }
 }

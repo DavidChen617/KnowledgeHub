@@ -318,6 +318,18 @@ type ViewMode = 'edit' | 'split' | 'preview';
                     <div class="flex-1 min-w-0">
                       <div class="text-xs text-[var(--color-accent)] mb-0.5 font-semibold">{{ c.username }}</div>
                       <div class="text-xs text-[var(--color-text)] leading-relaxed">{{ c.content }}</div>
+                      <button
+                        (click)="likeComment(c.commentId)"
+                        class="flex items-center gap-1 mt-1.5 text-[10px] font-mono transition-colors"
+                        [class]="c.likedByMe ? 'text-[var(--color-accent)]' : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]'"
+                        [attr.aria-pressed]="c.likedByMe ?? false"
+                        [attr.aria-label]="c.likedByMe ? '收回讚' : '按讚'"
+                      >
+                        <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                          <path d="M7.655 14.916v-.001h-.002l-.006-.003-.018-.01a22.066 22.066 0 0 1-3.744-2.584C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.044 5.231-3.886 6.818a22.08 22.08 0 0 1-3.744 2.584l-.018.01-.006.003h-.002Z"/>
+                        </svg>
+                        {{ c.likeCount }}
+                      </button>
                     </div>
                   </div>
                 }
@@ -563,6 +575,31 @@ export class NoteEditorComponent implements OnInit {
       this.toast.error('圖片上傳失敗');
     } finally {
       this.imageUploading.set(false);
+    }
+  }
+
+  async likeComment(commentId: string) {
+    const current = this.comments().find(x => x.commentId === commentId);
+    if (!current) return;
+    const isLiked = current.likedByMe ?? false;
+    try {
+      isLiked
+        ? await this.commentService.unlike(commentId)
+        : await this.commentService.like(commentId);
+      this.comments.update(cs => cs.map(x =>
+        x.commentId === commentId
+          ? { ...x, likedByMe: !isLiked, likeCount: x.likeCount + (isLiked ? -1 : 1) }
+          : x
+      ));
+    } catch (err) {
+      const status = (err as { status?: number })?.status;
+      if (!isLiked && status === 409) {
+        this.comments.update(cs => cs.map(x =>
+          x.commentId === commentId ? { ...x, likedByMe: true } : x
+        ));
+      } else {
+        this.toast.error('操作失敗');
+      }
     }
   }
 

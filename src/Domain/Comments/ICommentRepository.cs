@@ -13,4 +13,5 @@ public interface ICommentRepository
     Task<CommentLike?> FindLikeAsync(CommentId commentId, UserId userId, CancellationToken ct = default);
     Task DeleteLikeAsync(CommentLike like, CancellationToken ct = default);
     Task<Dictionary<CommentId, int>> GetLikeCountsAsync(IEnumerable<CommentId> commentIds, CancellationToken ct = default);
+    Task<HashSet<CommentId>> GetLikedByUserAsync(IEnumerable<CommentId> commentIds, UserId userId, CancellationToken ct = default);
 }

@@ -34,4 +34,16 @@ export class CommentService {
       this.http.post(`${this.base}/share/${token}/comments`, { content, parentCommentId })
     );
   }
+
+  async like(commentId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`${this.base}/api/comments/${commentId}/like`, {}, { observe: 'response' })
+    );
+  }
+
+  async unlike(commentId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete(`${this.base}/api/comments/${commentId}/like`, { observe: 'response' })
+    );
+  }
 }

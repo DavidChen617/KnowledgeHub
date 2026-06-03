@@ -35,6 +35,8 @@ export interface Comment {
   username: string;
   avatarUrl?: string;
   parentCommentId?: string;
+  likeCount: number;
+  likedByMe: boolean;
   createdAt: string;
 }
 
