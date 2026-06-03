@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 const FEATURES = [
   { icon: '◈', title: 'Markdown 筆記', desc: 'CodeMirror 6 編輯器，syntax highlight，所見即所得' },
   { icon: '◉', title: '知識圖譜', desc: '筆記之間的連結關係，視覺化呈現知識結構' },
-  { icon: '◎', title: 'AI 結構化', desc: '一鍵讓 AI 整理你的筆記，自動補充標題與架構' },
+  { icon: '◎', title: 'AI 結構化', desc: '一鍵讓 AI 整理你的筆記' },
   { icon: '◌', title: '分享與留言', desc: '產生公開連結，讓他人檢視筆記並留言互動' },
 ];
 
@@ -46,9 +46,8 @@ const FEATURES = [
             Personal Knowledge Management
           </div>
           <h1 class="font-display text-5xl md:text-7xl font-extrabold text-[var(--color-text)] leading-[0.95] tracking-tight mb-6">
-            你的知識，<br/>
-            <span class="text-[var(--color-accent)]">有連結</span><br/>
-            地存在
+            <span class="text-[var(--color-accent)]">An AI-Driven</span><br/>
+            Smart Notes Platform
           </h1>
           <p class="font-mono text-[var(--color-muted)] text-sm max-w-md leading-relaxed mb-10">
             寫下筆記，建立連結，讓 AI 整理結構。<br/>

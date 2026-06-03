@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
@@ -14,7 +14,7 @@
   --color-danger: #e5534b;
   --color-warning: #c69026;
 
-  --font-display: 'Syne', sans-serif;
+  --font-display: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -32,6 +32,42 @@ html, body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Gradient text animation */
+.gradient-text-animated {
+  background: linear-gradient(135deg, #539bf5 0%, #818cf8 40%, #a78bfa 70%, #539bf5 100%);
+  background-size: 200% auto;
+  animation: gradient-shift 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+@keyframes gradient-shift {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Floating orbs */
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 10px) scale(0.95); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-30px, 20px) scale(0.95); }
+  66%       { transform: translate(20px, -10px) scale(1.05); }
+}
+.orb-1 { animation: orb-float-1 12s ease-in-out infinite; }
+.orb-2 { animation: orb-float-2 15s ease-in-out infinite; }
+.orb-3 { animation: orb-float-1 18s ease-in-out infinite 3s; }
+
+/* Pulse dot */
+@keyframes pulse-dot-anim {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(83,155,245,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(83,155,245,0); }
+}
+.pulse-dot { animation: pulse-dot-anim 2s ease-in-out infinite; }
 
 /* Page enter animation */
 @keyframes page-enter {
