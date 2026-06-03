@@ -9,7 +9,7 @@ public class NoteTests
     // ── ChunkByHeadings ──────────────────────────────────────────────────────
 
     [Fact]
-    public void ChunkByHeadings_NoHeadings_SingleChunk()
+    public void Given_NoHeadings_When_AddStructure_Then_SingleChunk()
     {
         var note = Note.Create(UserId.New(), "標題", "這是一段沒有 ### 標題的內容\n第二行\n第三行").Value;
 
@@ -19,7 +19,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void ChunkByHeadings_MultipleHeadings_CorrectChunkCount()
+    public void Given_MultipleHeadings_When_AddStructure_Then_CorrectChunkCount()
     {
         var content = """
             ### 第一節
@@ -39,7 +39,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void ChunkByHeadings_EmptyContent_NoChunks()
+    public void Given_EmptyContent_When_AddStructure_Then_NoChunks()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
 
@@ -51,7 +51,7 @@ public class NoteTests
     // ── SyncImages ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void SyncImages_NewImage_AddedWithEnableTrue()
+    public void Given_NewImageUrl_When_UpdateContent_Then_ImageAddedWithEnableTrue()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
         var url = "https://res.cloudinary.com/test/image/upload/v1/new.png";
@@ -63,7 +63,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void SyncImages_ImageRemoved_DisabledAndEventRaised()
+    public void Given_ImageRemoved_When_UpdateContent_Then_ImageDisabledAndEventRaised()
     {
         var url = "https://res.cloudinary.com/test/image/upload/v1/img.png";
         var note = Note.Create(UserId.New(), "標題", $"![圖]({url})").Value;
@@ -77,7 +77,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void SyncImages_ImageUnchanged_NoImagesChangedEvent()
+    public void Given_ImageUnchanged_When_UpdateContent_Then_NoImagesChangedEvent()
     {
         var url = "https://res.cloudinary.com/test/image/upload/v1/img.png";
         var note = Note.Create(UserId.New(), "標題", $"![圖]({url})").Value;
@@ -91,7 +91,7 @@ public class NoteTests
     // ── SharedLink ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void CreateSharedLink_TokenIsUrlSafe()
+    public void Given_Note_When_CreateSharedLink_Then_TokenIsUrlSafe()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
 
@@ -105,7 +105,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void CreateSharedLink_RaisesSharedLinkCreatedEvent()
+    public void Given_Note_When_CreateSharedLink_Then_RaisesSharedLinkCreatedEvent()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
         note.ClearDomainEvents();
@@ -116,7 +116,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void DeleteSharedLink_ClearsTokenAndRaisesEvent()
+    public void Given_ExistingToken_When_DeleteSharedLink_Then_ClearsTokenAndRaisesEvent()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
         note.CreateSharedLink();
@@ -129,7 +129,7 @@ public class NoteTests
     }
 
     [Fact]
-    public void DeleteSharedLink_WhenNoToken_DoesNotRaiseEvent()
+    public void Given_NoToken_When_DeleteSharedLink_Then_NoEventRaised()
     {
         var note = Note.Create(UserId.New(), "標題").Value;
         note.ClearDomainEvents();

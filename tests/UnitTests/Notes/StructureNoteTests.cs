@@ -1,8 +1,6 @@
 using System.Net.Http.Headers;
-using Domain.AI;
 using Domain.Notes;
 using Domain.Users;
-using Infrastructure.Embedding;
 using Infrastructure.NoteStructure;
 using Microsoft.Extensions.Configuration;
 
@@ -61,7 +59,7 @@ public class StructureNoteTests
     }
 
     [Fact]
-    public async Task FullFlow_NoteLifecycle()
+    public async Task Given_NoteWithContent_When_StructureAndEmbed_Then_FullFlowSucceeds()
     {
         var refId1 = Guid.NewGuid();
         var refId2 = Guid.NewGuid();

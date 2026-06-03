@@ -7,10 +7,8 @@ namespace UnitTests.Domain;
 
 public class CommentTests
 {
-    // ── Create ───────────────────────────────────────────────────────────────
-
     [Fact]
-    public void Create_EmptyContent_ReturnsError()
+    public void Given_EmptyContent_When_CreateComment_Then_ReturnsError()
     {
         var result = Comment.Create(NoteId.New(), UserId.New(), "   ");
 
@@ -19,7 +17,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void Create_TopLevel_RaisesEventWithNullParentCommentId()
+    public void Given_TopLevelComment_When_Create_Then_EventHasNullParentCommentId()
     {
         var result = Comment.Create(NoteId.New(), UserId.New(), "留言內容");
 
@@ -29,7 +27,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void Create_Nested_EventContainsParentCommentId()
+    public void Given_ParentCommentId_When_Create_Then_EventContainsParentCommentId()
     {
         var parentId = CommentId.New();
 
@@ -41,10 +39,8 @@ public class CommentTests
         Assert.Equal(parentId.Value, ev.ParentCommentId);
     }
 
-    // ── UpdateContent ────────────────────────────────────────────────────────
-
     [Fact]
-    public void UpdateContent_EmptyContent_ReturnsError()
+    public void Given_EmptyContent_When_UpdateContent_Then_ReturnsError()
     {
         var comment = Comment.Create(NoteId.New(), UserId.New(), "原始內容").Value;
         var originalContent = comment.Content;
@@ -56,7 +52,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void UpdateContent_ValidContent_UpdatesAndRaisesEvent()
+    public void Given_ValidContent_When_UpdateContent_Then_UpdatesAndRaisesEvent()
     {
         var comment = Comment.Create(NoteId.New(), UserId.New(), "原始內容").Value;
         comment.ClearDomainEvents();
@@ -68,15 +64,11 @@ public class CommentTests
         Assert.Single(comment.DomainEvents.OfType<CommentEditedEvent>());
     }
 
-    // ── Like ─────────────────────────────────────────────────────────────────
-
     [Fact]
-    public void Like_ReturnsCommentLikeWithCorrectIds()
+    public void Given_Comment_When_Like_Then_ReturnsCommentLikeWithCorrectIds()
     {
-        var commentId = CommentId.New();
         var userId = UserId.New();
-        var noteId = NoteId.New();
-        var comment = Comment.Create(noteId, userId, "內容").Value;
+        var comment = Comment.Create(NoteId.New(), userId, "內容").Value;
 
         var like = comment.Like(userId);
 
@@ -85,7 +77,7 @@ public class CommentTests
     }
 
     [Fact]
-    public void Like_RaisesCommentLikedEvent()
+    public void Given_Comment_When_Like_Then_RaisesCommentLikedEvent()
     {
         var comment = Comment.Create(NoteId.New(), UserId.New(), "內容").Value;
         comment.ClearDomainEvents();
@@ -97,10 +89,8 @@ public class CommentTests
         Assert.Equal(likerId.Value, ev.UserId);
     }
 
-    // ── Unlike ───────────────────────────────────────────────────────────────
-
     [Fact]
-    public void Unlike_RaisesCommentUnlikedEvent()
+    public void Given_Comment_When_Unlike_Then_RaisesCommentUnlikedEvent()
     {
         var comment = Comment.Create(NoteId.New(), UserId.New(), "內容").Value;
         comment.ClearDomainEvents();

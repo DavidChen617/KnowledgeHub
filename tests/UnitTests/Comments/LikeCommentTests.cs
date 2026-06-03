@@ -10,7 +10,7 @@ namespace UnitTests.Comments;
 public class LikeCommentTests
 {
     [Fact]
-    public async Task LikeComment_FirstTime_Succeeds()
+    public async Task Given_CommentExists_When_UserLikes_Then_Succeeds()
     {
         var comment = Comment.Create(NoteId.New(), UserId.New(), "內容").Value;
         var repo = new FakeCommentRepository(comment, existingLike: null);
@@ -23,7 +23,7 @@ public class LikeCommentTests
     }
 
     [Fact]
-    public async Task LikeComment_AlreadyLiked_ReturnsError()
+    public async Task Given_CommentAlreadyLiked_When_UserLikes_Then_ReturnsAlreadyLikedError()
     {
         var userId = UserId.New();
         var comment = Comment.Create(NoteId.New(), userId, "內容").Value;
@@ -39,7 +39,7 @@ public class LikeCommentTests
     }
 
     [Fact]
-    public async Task LikeComment_CommentNotFound_ReturnsNotFound()
+    public async Task Given_CommentNotFound_When_UserLikes_Then_ReturnsNotFound()
     {
         var repo = new FakeCommentRepository(returnComment: null, existingLike: null);
         var handler = new LikeCommentHandler(repo, FakeUnitOfWork.Instance);

@@ -6,10 +6,8 @@ namespace UnitTests.Domain;
 
 public class CategoryTests
 {
-    // ── Create ───────────────────────────────────────────────────────────────
-
     [Fact]
-    public void Create_EmptyName_ReturnsError()
+    public void Given_EmptyName_When_CreateCategory_Then_ReturnsError()
     {
         var result = Category.Create(UserId.New(), "   ");
 
@@ -18,7 +16,7 @@ public class CategoryTests
     }
 
     [Fact]
-    public void Create_ValidName_RaisesCategoryCreatedEvent()
+    public void Given_ValidName_When_CreateCategory_Then_RaisesCategoryCreatedEvent()
     {
         var result = Category.Create(UserId.New(), "筆記分類");
 
@@ -27,10 +25,8 @@ public class CategoryTests
         Assert.Single(result.Value.DomainEvents.OfType<CategoryCreatedEvent>());
     }
 
-    // ── Rename ───────────────────────────────────────────────────────────────
-
     [Fact]
-    public void Rename_EmptyName_ReturnsError()
+    public void Given_EmptyName_When_Rename_Then_ReturnsError()
     {
         var category = Category.Create(UserId.New(), "原始名稱").Value;
 
@@ -41,7 +37,7 @@ public class CategoryTests
     }
 
     [Fact]
-    public void Rename_ValidName_UpdatesNameAndRaisesEvent()
+    public void Given_ValidName_When_Rename_Then_UpdatesNameAndRaisesEvent()
     {
         var category = Category.Create(UserId.New(), "原始名稱").Value;
         category.ClearDomainEvents();

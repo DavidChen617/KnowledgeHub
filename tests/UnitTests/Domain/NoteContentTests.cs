@@ -7,7 +7,7 @@ public class NoteContentTests
     // ── ParseLinks ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void ParseLinks_ValidUuid_ReturnsNoteId()
+    public void Given_ValidUuid_When_ParseLinks_Then_ReturnsNoteId()
     {
         var id = Guid.NewGuid();
         var content = new NoteContent($"參考 [[{id}]]");
@@ -17,7 +17,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseLinks_InvalidFormat_Ignored()
+    public void Given_InvalidFormat_When_ParseLinks_Then_ReturnsEmpty()
     {
         var content = new NoteContent("[[not-a-uuid]] [[123]]");
 
@@ -25,7 +25,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseLinks_DuplicateUuid_Deduplicated()
+    public void Given_DuplicateUuid_When_ParseLinks_Then_Deduplicated()
     {
         var id = Guid.NewGuid();
         var content = new NoteContent($"[[{id}]] [[{id}]]");
@@ -34,7 +34,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseLinks_EmptyContent_ReturnsEmpty()
+    public void Given_EmptyContent_When_ParseLinks_Then_ReturnsEmpty()
     {
         var content = new NoteContent(string.Empty);
 
@@ -42,7 +42,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseLinks_MultipleLinks_AllParsed()
+    public void Given_MultipleLinks_When_ParseLinks_Then_AllParsed()
     {
         var id1 = Guid.NewGuid();
         var id2 = Guid.NewGuid();
@@ -54,7 +54,7 @@ public class NoteContentTests
     // ── ParseImages ─────────────────────────────────────────────────────────
 
     [Fact]
-    public void ParseImages_SingleImage_ReturnsUrl()
+    public void Given_SingleImage_When_ParseImages_Then_ReturnsUrl()
     {
         var content = new NoteContent("![圖](https://example.com/a.png)");
 
@@ -63,7 +63,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseImages_DuplicateUrl_Deduplicated()
+    public void Given_DuplicateUrl_When_ParseImages_Then_Deduplicated()
     {
         var content = new NoteContent("![a](https://x.com/img.png) ![b](https://x.com/img.png)");
 
@@ -71,7 +71,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseImages_NoImages_ReturnsEmpty()
+    public void Given_NoImages_When_ParseImages_Then_ReturnsEmpty()
     {
         var content = new NoteContent("純文字，沒有圖片");
 
@@ -79,7 +79,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ParseImages_MultipleImages_AllParsed()
+    public void Given_MultipleImages_When_ParseImages_Then_AllParsed()
     {
         var content = new NoteContent("![a](https://x.com/1.png)\n![b](https://x.com/2.png)");
 
@@ -89,7 +89,7 @@ public class NoteContentTests
     // ── GetSurroundingContext ────────────────────────────────────────────────
 
     [Fact]
-    public void GetSurroundingContext_ImageInMiddle_ReturnsContextWithPlaceholder()
+    public void Given_ImageInMiddle_When_GetSurroundingContext_Then_ReturnsContextWithPlaceholder()
     {
         var url = "https://x.com/img.png";
         var lines = new[]
@@ -109,7 +109,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void GetSurroundingContext_ImageAtStart_NoOutOfBounds()
+    public void Given_ImageAtStart_When_GetSurroundingContext_Then_NoOutOfBounds()
     {
         var url = "https://x.com/img.png";
         var content = new NoteContent($"![alt]({url})\nline2\nline3");
@@ -120,7 +120,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void GetSurroundingContext_UrlNotInContent_ReturnsEmpty()
+    public void Given_UrlNotInContent_When_GetSurroundingContext_Then_ReturnsEmpty()
     {
         var content = new NoteContent("沒有圖片的內容");
 
@@ -132,7 +132,7 @@ public class NoteContentTests
     // ── ReplaceImageWithDescription ──────────────────────────────────────────
 
     [Fact]
-    public void ReplaceImageWithDescription_MatchingUrl_Replaced()
+    public void Given_MatchingUrl_When_ReplaceImageWithDescription_Then_ImageReplaced()
     {
         var url = "https://x.com/img.png";
         var original = $"文字 ![alt]({url}) 更多文字";
@@ -144,7 +144,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ReplaceImageWithDescription_NonMatchingUrl_Unchanged()
+    public void Given_NonMatchingUrl_When_ReplaceImageWithDescription_Then_Unchanged()
     {
         var target = "https://x.com/target.png";
         var other = "https://x.com/other.png";
@@ -156,7 +156,7 @@ public class NoteContentTests
     }
 
     [Fact]
-    public void ReplaceImageWithDescription_MultipleImages_OnlyTargetReplaced()
+    public void Given_MultipleImages_When_ReplaceImageWithDescription_Then_OnlyTargetReplaced()
     {
         var target = "https://x.com/target.png";
         var other = "https://x.com/other.png";

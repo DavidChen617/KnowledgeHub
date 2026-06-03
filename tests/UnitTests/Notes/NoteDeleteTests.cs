@@ -3,74 +3,53 @@ using Domain.Notes;
 using Domain.Notes.Events;
 using Domain.Shared;
 using Domain.Users;
+using ShareKernal;
 
 namespace UnitTests.Notes;
 
 public class NoteDeleteTests
 {
     [Fact]
-    public async Task DeleteNote_UseCase()
+    public async Task Given_NoteNotFound_When_DeleteNote_Then_ReturnsNotFound()
     {
-        // --- 1. 建立含圖片的筆記 ---
-        var content = """
-            # 系統設計筆記
-            架構圖如下：
-            ![架構圖](https://res.cloudinary.com/test/image/upload/v1/arch.png)
-            詳細說明請參考：
-            ![流程圖](https://res.cloudinary.com/test/image/upload/v1/flow.png)
-            """;
+        var repo = new FakeNoteRepository(returnNote: null);
+        var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
 
+        var result = await handler.Handle(new DeleteNoteCommandRequest(NoteId.New(), UserId.New()));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.NotFound, result.Error.Type);
+        Assert.False(repo.WasDeleted);
+    }
+
+    [Fact]
+    public async Task Given_NoteOwner_When_DeleteNote_Then_SucceedsAndRaisesEvent()
+    {
         var userId = UserId.New();
-        var noteResult = Note.Create(userId, "系統設計筆記", content);
-        Assert.True(noteResult.IsSuccess);
-        var note = noteResult.Value;
+        var note = Note.Create(userId, "標題", "內容").Value;
+        var repo = new FakeNoteRepository(note);
+        var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        Assert.Equal(2, note.Images.Count);
-        Assert.All(note.Images, img => Assert.True(img.Enable));
-        Console.WriteLine($"[1] 建立筆記，追蹤圖片數：{note.Images.Count}");
-
-        // --- 2. 更新內容，移除一張圖片 ---
-        var updatedContent = """
-            # 系統設計筆記
-            架構圖如下：
-            ![架構圖](https://res.cloudinary.com/test/image/upload/v1/arch.png)
-            流程圖已移除。
-            """;
-
-        note.UpdateContent(updatedContent);
-
-        var imagesChangedEvent = Assert.Single(note.DomainEvents.OfType<NoteImagesChangedEvent>());
-        Assert.Equal(note.Id, imagesChangedEvent.NoteId);
-
-        var disabledImage = note.Images.Single(img => !img.Enable);
-        Assert.Equal("https://res.cloudinary.com/test/image/upload/v1/flow.png", disabledImage.PublicUrl);
-        Console.WriteLine($"[2] 移除圖片：{disabledImage.PublicUrl}，NoteImagesChangedEvent 觸發");
-
-        // --- 3. 使用者非擁有者，handler 回傳 NotFound ---
-        var wrongUserRepo = new FakeNoteRepository(returnNote: null);
-        var handler = new DeleteNoteHandler(wrongUserRepo, FakeUnitOfWork.Instance);
-        var wrongUserCommand = new DeleteNoteCommandRequest(note.Id, UserId.New());
-
-        var notFoundResult = await handler.Handle(wrongUserCommand);
-
-        Assert.False(notFoundResult.IsSuccess);
-        Assert.False(wrongUserRepo.WasDeleted);
-        Console.WriteLine($"[3] 非擁有者刪除：回傳 NotFound，未執行刪除");
-
-        // --- 4. 擁有者刪除，觸發 NoteDeletedEvent ---
-        var ownerRepo = new FakeNoteRepository(returnNote: note);
-        handler = new DeleteNoteHandler(ownerRepo, FakeUnitOfWork.Instance);
-        var deleteCommand = new DeleteNoteCommandRequest(note.Id, userId);
-
-        var result = await handler.Handle(deleteCommand);
+        var result = await handler.Handle(new DeleteNoteCommandRequest(note.Id, userId));
 
         Assert.True(result.IsSuccess);
-        Assert.True(ownerRepo.WasDeleted);
-        Assert.Same(note, ownerRepo.DeletedNote);
+        Assert.True(repo.WasDeleted);
+        Assert.Single(note.DomainEvents.OfType<NoteDeletedEvent>());
+    }
 
-        var deletedEvent = Assert.Single(note.DomainEvents.OfType<NoteDeletedEvent>());
-        Assert.Equal(note.Id.Value, deletedEvent.NoteId);
-        Console.WriteLine($"[4] 擁有者刪除成功，NoteDeletedEvent 觸發（NoteId: {deletedEvent.NoteId}）");
+    [Fact]
+    public async Task Given_NoteWithImages_When_DeleteNote_Then_EventContainsImageUrls()
+    {
+        var userId = UserId.New();
+        var imageUrl = "https://res.cloudinary.com/test/image/upload/v1/arch.png";
+        var note = Note.Create(userId, "標題", $"![圖]({imageUrl})").Value;
+        var repo = new FakeNoteRepository(note);
+        var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
+
+        await handler.Handle(new DeleteNoteCommandRequest(note.Id, userId));
+
+        var ev = Assert.Single(note.DomainEvents.OfType<NoteDeletedEvent>());
+        Assert.Contains(imageUrl, ev.ImageUrls);
     }
 }
 
@@ -89,28 +68,16 @@ file class FakeNoteRepository(Note? returnNote) : INoteRepository
     public Note? DeletedNote { get; private set; }
 
     public Task AddAsync(Note note, CancellationToken ct = default) => Task.CompletedTask;
-
-    public Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default) =>
-        Task.FromResult(returnNote);
-
-    public Task<Note?> GetByIdAndUserIdAsync(NoteId id, UserId userId, CancellationToken ct = default) =>
-        Task.FromResult(returnNote);
-
+    public Task<Note?> GetByIdAsync(NoteId id, CancellationToken ct = default) => Task.FromResult(returnNote);
+    public Task<Note?> GetByIdAndUserIdAsync(NoteId id, UserId userId, CancellationToken ct = default) => Task.FromResult(returnNote);
     public Task Update(Note note, CancellationToken ct = default) => Task.CompletedTask;
-
-    public Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<Note>>([]);
-
-    public Task<IReadOnlyList<Note>> SearchByTitleAsync(UserId userId, string title, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<Note>>([]);
-
+    public Task<IReadOnlyList<Note>> GetAllByUserIdAsync(UserId userId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Note>>([]);
+    public Task<IReadOnlyList<Note>> SearchByTitleAsync(UserId userId, string title, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Note>>([]);
     public Task DeleteAsync(Note note, CancellationToken ct = default)
     {
         WasDeleted = true;
         DeletedNote = note;
         return Task.CompletedTask;
     }
-
-    public Task<Note?> GetBySharedTokenAsync(string token, CancellationToken ct = default) =>
-        Task.FromResult<Note?>(null);
+    public Task<Note?> GetBySharedTokenAsync(string token, CancellationToken ct = default) => Task.FromResult<Note?>(null);
 }

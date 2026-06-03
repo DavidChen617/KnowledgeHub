@@ -19,13 +19,14 @@ public class CloudinaryImageStorageTests
             Config["Cloudinary:CloudName"],
             Config["Cloudinary:ApiKey"],
             Config["Cloudinary:ApiSecret"]
-        )) { Api = { Secure = true } };
+        ))
+        { Api = { Secure = true } };
 
     private static IImageStorage BuildStorage(Cloudinary cloudinary) =>
         new CloudinaryImageStorage(cloudinary, NullLogger<CloudinaryImageStorage>.Instance);
 
     [Fact]
-    public async Task DeleteAsync_ExistingImage_RemovesFromCloudinary()
+    public async Task Given_ExistingImage_When_DeleteAsync_Then_RemovesFromCloudinary()
     {
         var cloudinary = BuildCloudinary();
 
@@ -55,7 +56,7 @@ public class CloudinaryImageStorageTests
     }
 
     [Fact]
-    public async Task DeleteAsync_InvalidUrl_LogsWarningAndDoesNotThrow()
+    public async Task Given_InvalidUrl_When_DeleteAsync_Then_DoesNotThrow()
     {
         var storage = BuildStorage(BuildCloudinary());
 

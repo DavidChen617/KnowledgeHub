@@ -12,7 +12,7 @@ public class CommentOwnershipTests
     // ── EditComment ──────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task EditComment_Author_Succeeds()
+    public async Task Given_CommentAuthor_When_EditComment_Then_Succeeds()
     {
         var authorId = UserId.New();
         var comment = Comment.Create(NoteId.New(), authorId, "原始內容").Value;
@@ -26,7 +26,7 @@ public class CommentOwnershipTests
     }
 
     [Fact]
-    public async Task EditComment_NonAuthor_ReturnsForbidden()
+    public async Task Given_NonAuthor_When_EditComment_Then_ReturnsForbidden()
     {
         var authorId = UserId.New();
         var comment = Comment.Create(NoteId.New(), authorId, "原始內容").Value;
@@ -41,7 +41,7 @@ public class CommentOwnershipTests
     }
 
     [Fact]
-    public async Task EditComment_NotFound_ReturnsNotFound()
+    public async Task Given_CommentNotFound_When_EditComment_Then_ReturnsNotFound()
     {
         var repo = new FakeOwnershipCommentRepository(returnComment: null);
         var handler = new EditCommentHandler(repo, FakeUnitOfWork.Instance);
@@ -55,7 +55,7 @@ public class CommentOwnershipTests
     // ── DeleteComment ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task DeleteComment_Author_Succeeds()
+    public async Task Given_CommentAuthor_When_DeleteComment_Then_Succeeds()
     {
         var authorId = UserId.New();
         var comment = Comment.Create(NoteId.New(), authorId, "內容").Value;
@@ -69,7 +69,7 @@ public class CommentOwnershipTests
     }
 
     [Fact]
-    public async Task DeleteComment_NonAuthor_ReturnsForbidden()
+    public async Task Given_NonAuthor_When_DeleteComment_Then_ReturnsForbidden()
     {
         var authorId = UserId.New();
         var comment = Comment.Create(NoteId.New(), authorId, "內容").Value;
@@ -84,7 +84,7 @@ public class CommentOwnershipTests
     }
 
     [Fact]
-    public async Task DeleteComment_NotFound_ReturnsNotFound()
+    public async Task Given_CommentNotFound_When_DeleteComment_Then_ReturnsNotFound()
     {
         var repo = new FakeOwnershipCommentRepository(returnComment: null);
         var handler = new DeleteCommentHandler(repo, FakeUnitOfWork.Instance);
