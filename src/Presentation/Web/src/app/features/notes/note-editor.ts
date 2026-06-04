@@ -322,7 +322,7 @@ type ViewMode = 'edit' | 'split' | 'preview';
                         (click)="likeComment(c.commentId)"
                         class="flex items-center gap-1 mt-1.5 text-[10px] font-mono transition-colors"
                         [class]="c.likedByMe ? 'text-[var(--color-accent)]' : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]'"
-                        [attr.aria-pressed]="c.likedByMe ?? false"
+                        [attr.aria-pressed]="c.likedByMe"
                         [attr.aria-label]="c.likedByMe ? '收回讚' : '按讚'"
                       >
                         <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -581,7 +581,7 @@ export class NoteEditorComponent implements OnInit {
   async likeComment(commentId: string) {
     const current = this.comments().find(x => x.commentId === commentId);
     if (!current) return;
-    const isLiked = current.likedByMe ?? false;
+    const isLiked = current.likedByMe;
     try {
       isLiked
         ? await this.commentService.unlike(commentId)
