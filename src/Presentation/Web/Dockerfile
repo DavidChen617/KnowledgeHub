@@ -7,7 +7,7 @@ COPY src/Presentation/Web/package.json src/Presentation/Web/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY src/Presentation/Web/ .
-RUN pnpm run build --configuration=production
+RUN pnpm exec ng build --configuration production
 
 FROM nginx:alpine AS runtime
 COPY --from=build /app/dist/Web/browser /usr/share/nginx/html
