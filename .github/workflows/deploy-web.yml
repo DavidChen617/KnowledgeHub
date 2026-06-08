@@ -8,6 +8,7 @@ on:
       - 'src/Presentation/Web/**'
       - 'infra/configs/nginx.conf'
       - 'infra/k8s/web/**'
+      - '.github/workflows/deploy-web.yml'
 
 jobs:
   build:
