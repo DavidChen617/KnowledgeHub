@@ -493,5 +493,5 @@ $RECYCLE.BIN/
 # Terraform
 infra/terraform/.terraform/
 infra/terraform/*.tfstate
-infra/terraform/*.tfstate.backup
+infra/terraform/*.tfstate*
 infra/terraform/terraform.tfvars
