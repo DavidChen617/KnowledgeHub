@@ -23,6 +23,27 @@ spec:
                 name: api
                 port:
                   number: 8080
+          - path: /oauth
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /image
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
+          - path: /share
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8080
           - path: /
             pathType: Prefix
             backend:
