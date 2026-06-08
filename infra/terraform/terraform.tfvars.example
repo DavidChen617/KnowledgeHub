@@ -1,0 +1,4 @@
+subscription_id     = "your-subscription-id-here"
+admin_username      = "azureuser"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+dns_label           = "davidchen"

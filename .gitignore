@@ -489,3 +489,9 @@ $RECYCLE.BIN/
 .codex
 .claudesecrets.sh
 .claude/
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/terraform.tfvars
