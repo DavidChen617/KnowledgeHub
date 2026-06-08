@@ -10,6 +10,10 @@ on:
       - 'src/Domain/**'
       - 'src/Infrastructure/**'
       - 'src/ShareKernal/**'
+      - 'infra/k8s/api/**'
+      - 'infra/k8s/postgres/**'
+      - 'infra/k8s/redis/**'
+      - 'infra/k8s/kafka/**'
 
 jobs:
   build:
