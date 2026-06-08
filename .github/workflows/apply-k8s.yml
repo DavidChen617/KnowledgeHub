@@ -1,0 +1,44 @@
+name: Apply K8s Manifests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/k8s/**'
+      - 'infra/configs/**'
+
+jobs:
+  apply:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply secrets
+        run: |
+          echo "${{ secrets.K8S_ENV }}" > /tmp/.env
+          set -a; source /tmp/.env; set +a
+          envsubst < infra/k8s/postgres/secret.yaml | kubectl apply -f -
+          envsubst < infra/k8s/api/secret.yaml | kubectl apply -f -
+          rm /tmp/.env
+
+      - name: Get current image tags
+        id: tags
+        run: |
+          API_TAG=$(kubectl get deployment api -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null | cut -d: -f2 || echo "latest")
+          WEB_TAG=$(kubectl get deployment web -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null | cut -d: -f2 || echo "latest")
+          echo "api=$API_TAG" >> $GITHUB_OUTPUT
+          echo "web=$WEB_TAG" >> $GITHUB_OUTPUT
+
+      - name: Apply manifests
+        run: |
+          sed -i "s/IMAGE_TAG/${{ steps.tags.outputs.api }}/g" infra/k8s/api/deployment.yaml
+          sed -i "s/IMAGE_TAG/${{ steps.tags.outputs.web }}/g" infra/k8s/web/deployment.yaml
+
+          kubectl apply -f infra/k8s/postgres/
+          kubectl apply -f infra/k8s/redis/
+          kubectl apply -f infra/k8s/kafka/
+          kubectl apply -f infra/k8s/api/
+          kubectl apply -f infra/k8s/web/
