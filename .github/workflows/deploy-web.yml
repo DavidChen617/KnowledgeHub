@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/Presentation/Web/**'
       - 'infra/configs/nginx.conf'
+      - 'infra/k8s/web/**'
 
 jobs:
   build:
