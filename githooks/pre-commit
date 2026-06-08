@@ -1,0 +1,20 @@
+#!/bin/sh
+
+STAGED_CS=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$' || true)
+
+if [ -z "$STAGED_CS" ]; then
+    exit 0
+fi
+
+COUNT=$(echo "$STAGED_CS" | wc -l | tr -d ' ')
+echo "dotnet format: formatting $COUNT staged .cs file(s)..."
+
+# shellcheck disable=SC2086
+if ! dotnet format KnowledgeHub.slnx --include $STAGED_CS --verbosity minimal; then
+    echo "dotnet format failed"
+    exit 1
+fi
+
+# Re-stage after formatting in case dotnet format changed any files
+# shellcheck disable=SC2086
+git add $STAGED_CS
