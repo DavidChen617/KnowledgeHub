@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: control-plane-vm
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: api
+          image: davidchen617/knowledgehub-api:IMAGE_TAG
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: api-secret
