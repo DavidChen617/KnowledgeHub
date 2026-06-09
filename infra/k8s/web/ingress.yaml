@@ -44,7 +44,7 @@ spec:
                 name: api
                 port:
                   number: 8080
-          - path: /
+          - path: /knowledgehub
             pathType: Prefix
             backend:
               service:
