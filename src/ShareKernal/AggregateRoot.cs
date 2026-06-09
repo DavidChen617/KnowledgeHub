@@ -1,6 +1,6 @@
 using CoreMesh.Outbox.Abstractions;
 
-namespace Domain.Shared;
+namespace ShareKernal;
 
 public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
 {

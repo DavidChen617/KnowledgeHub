@@ -1,5 +1,5 @@
 using CoreMesh.Dispatching.Abstractions;
-using Domain.AI;
+using Domain.NoteStructure;
 using Domain.Users;
 using ShareKernal;
 

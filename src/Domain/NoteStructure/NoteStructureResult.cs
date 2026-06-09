@@ -1,4 +1,4 @@
-namespace Domain.AI;
+namespace Domain.NoteStructure;
 
 public record NoteStructureResult(
     string Description,

@@ -1,7 +1,7 @@
 using CoreMesh.Dispatching.Abstractions;
 using Domain.Categories;
 using Domain.Notes;
-using Domain.Shared;
+
 using Domain.Users;
 using ShareKernal;
 using static ShareKernal.Result;

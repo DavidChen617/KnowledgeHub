@@ -1,5 +1,6 @@
-using Domain.AI;
-using Domain.Shared;
+using Domain.NoteStructure;
+using ShareKernal;
+
 
 namespace Domain.Notes;
 

@@ -1,6 +1,6 @@
 using Domain.Categories;
 using Domain.Notes.Events;
-using Domain.Shared;
+
 using Domain.Users;
 using ShareKernal;
 

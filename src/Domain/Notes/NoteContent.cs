@@ -1,11 +1,12 @@
 using System.Text.RegularExpressions;
-using Domain.Shared;
+using ShareKernal;
+
 
 namespace Domain.Notes;
 
 public sealed class NoteContent : ValueObject
 {
-    private static readonly Regex LinkPattern  = new(@"\[\[([^\[\]]+)\]\]",      RegexOptions.Compiled);
+    private static readonly Regex LinkPattern = new(@"\[\[([^\[\]]+)\]\]", RegexOptions.Compiled);
     private static readonly Regex ImagePattern = new(@"!\[[^\]]*\]\(([^)]+)\)", RegexOptions.Compiled);
 
     public string Value { get; }
@@ -14,9 +15,9 @@ public sealed class NoteContent : ValueObject
 
     public NoteContent(string value)
     {
-        Value          = value ?? string.Empty;
-        LinkedNoteIds  = ParseLinks(Value);
-        ImageUrls      = ParseImages(Value);
+        Value = value ?? string.Empty;
+        LinkedNoteIds = ParseLinks(Value);
+        ImageUrls = ParseImages(Value);
     }
 
     public string GetSurroundingContext(string imageUrl, int linesBefore = 3, int linesAfter = 3)
@@ -26,8 +27,8 @@ public sealed class NoteContent : ValueObject
         {
             if (!lines[i].Contains(imageUrl)) continue;
 
-            var start        = Math.Max(0, i - linesBefore);
-            var end          = Math.Min(lines.Length - 1, i + linesAfter);
+            var start = Math.Max(0, i - linesBefore);
+            var end = Math.Min(lines.Length - 1, i + linesAfter);
             var contextLines = lines[start..(end + 1)].ToArray();
             contextLines[i - start] = "[image]";
             return string.Join('\n', contextLines);

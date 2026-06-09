@@ -69,7 +69,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("outbox_messages", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.AI.Chunk<string>", b =>
+            modelBuilder.Entity("Domain.NoteStructure.Chunk<string>", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -113,7 +113,7 @@ namespace Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Domain.AI.Embedding", b =>
+            modelBuilder.Entity("Domain.NoteStructure.Embedding", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -511,7 +511,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.ToTable("user_identities", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.AI.Chunk<string>", b =>
+            modelBuilder.Entity("Domain.NoteStructure.Chunk<string>", b =>
                 {
                     b.HasOne("Domain.Notes.NoteStructure", null)
                         .WithMany("Chunks")
@@ -520,11 +520,11 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.AI.Embedding", b =>
+            modelBuilder.Entity("Domain.NoteStructure.Embedding", b =>
                 {
-                    b.HasOne("Domain.AI.Chunk<string>", null)
+                    b.HasOne("Domain.NoteStructure.Chunk<string>", null)
                         .WithOne("Embedding")
-                        .HasForeignKey("Domain.AI.Embedding", "ChunkId")
+                        .HasForeignKey("Domain.NoteStructure.Embedding", "ChunkId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -572,7 +572,7 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.AI.Chunk<string>", b =>
+            modelBuilder.Entity("Domain.NoteStructure.Chunk<string>", b =>
                 {
                     b.Navigation("Embedding");
                 });

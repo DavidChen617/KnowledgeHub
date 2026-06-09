@@ -1,6 +1,6 @@
 using ShareKernal;
 
-namespace Domain.AI;
+namespace Infrastructure;
 
 public static class AiErrors
 {

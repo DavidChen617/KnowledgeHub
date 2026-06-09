@@ -1,4 +1,5 @@
-using Domain.Shared;
+using ShareKernal;
+
 
 namespace Domain.Notes;
 

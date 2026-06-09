@@ -1,5 +1,6 @@
-using Domain.Shared;
+
 using Microsoft.EntityFrameworkCore.Storage;
+using ShareKernal;
 
 namespace Infrastructure.Persistence;
 
@@ -19,9 +20,9 @@ internal sealed class EfUnitOfWork(AppDbContext db) : IUnitOfWork
 
     public async Task CommitAsync(CancellationToken ct = default)
     {
-        if (_transaction is null) 
+        if (_transaction is null)
             throw new InvalidOperationException("No active transaction.");
-        
+
         await _transaction.CommitAsync(ct);
         await _transaction.DisposeAsync();
         _transaction = null;
@@ -29,9 +30,9 @@ internal sealed class EfUnitOfWork(AppDbContext db) : IUnitOfWork
 
     public async Task RollbackAsync(CancellationToken ct = default)
     {
-        if (_transaction is null) 
+        if (_transaction is null)
             throw new InvalidOperationException("No active transaction.");
-        
+
         await _transaction.RollbackAsync(ct);
         await _transaction.DisposeAsync();
         _transaction = null;

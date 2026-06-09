@@ -1,4 +1,4 @@
-namespace Domain.Shared;
+namespace ShareKernal;
 
 public interface IUnitOfWork
 {
