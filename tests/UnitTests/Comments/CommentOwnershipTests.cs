@@ -1,7 +1,6 @@
 using Application.Comments;
 using Domain.Comments;
 using Domain.Notes;
-using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
 

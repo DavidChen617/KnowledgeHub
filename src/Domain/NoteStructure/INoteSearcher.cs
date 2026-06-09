@@ -2,7 +2,7 @@ using Domain.Notes;
 using Domain.Users;
 using ShareKernal;
 
-namespace Domain.AI;
+namespace Domain.NoteStructure;
 
 public interface INoteSearcher
 {

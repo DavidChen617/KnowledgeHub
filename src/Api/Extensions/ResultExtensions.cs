@@ -44,6 +44,7 @@ public static class ResultExtensions
                 ErrorType.Conflict => StatusCodes.Status409Conflict,
                 ErrorType.Validation => StatusCodes.Status400BadRequest,
                 ErrorType.ServiceUnavailable => StatusCodes.Status503ServiceUnavailable,
+                ErrorType.TooManyRequests => StatusCodes.Status429TooManyRequests,
                 _ => StatusCodes.Status500InternalServerError,
             };
             return Results.Json(

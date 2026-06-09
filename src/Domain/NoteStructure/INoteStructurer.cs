@@ -1,6 +1,6 @@
 using ShareKernal;
 
-namespace Domain.AI;
+namespace Domain.NoteStructure;
 
 public interface INoteStructurer
 {

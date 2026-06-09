@@ -4,6 +4,7 @@ import {
 import { createResizable } from '../../shared/utils/resizable';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Location } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -514,8 +515,9 @@ export class NoteEditorComponent implements OnInit {
       this.structures.update(list => [newStructure, ...list]);
       this.activeStructure.set(newStructure);
       this.toast.success('AI 整理完成，結果已新增至側邊欄');
-    } catch {
-      this.toast.error('AI 整理失敗');
+    } catch (err) {
+      const detail = (err as HttpErrorResponse).error?.problem?.detail;
+      this.toast.error(detail ?? 'AI 整理失敗');
     } finally {
       this.structuring.set(false);
     }

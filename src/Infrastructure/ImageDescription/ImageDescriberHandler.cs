@@ -1,4 +1,4 @@
-using Domain.AI;
+using Domain.NoteStructure;
 using ShareKernal;
 
 namespace Infrastructure.ImageDescription;

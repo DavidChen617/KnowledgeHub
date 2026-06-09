@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pgvector;
-using DAI = Domain.AI;
+using DAI = Domain.NoteStructure;
 
 namespace Infrastructure.Persistence.Configurations;
 

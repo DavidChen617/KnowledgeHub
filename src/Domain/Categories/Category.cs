@@ -1,5 +1,5 @@
 using Domain.Categories.Events;
-using Domain.Shared;
+
 using Domain.Users;
 using ShareKernal;
 

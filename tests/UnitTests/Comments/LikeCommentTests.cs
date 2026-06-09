@@ -1,6 +1,5 @@
 using Application.Comments;
 using Domain.Comments;
-using Domain.Shared;
 using Domain.Users;
 using ShareKernal;
 using NoteId = Domain.Notes.NoteId;

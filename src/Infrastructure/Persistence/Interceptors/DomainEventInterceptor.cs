@@ -1,7 +1,7 @@
 using CoreMesh.Outbox.Abstractions;
-using Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using ShareKernal;
 
 namespace Infrastructure.Persistence.Interceptors;
 

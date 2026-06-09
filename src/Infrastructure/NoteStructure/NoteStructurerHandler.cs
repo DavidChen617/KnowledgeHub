@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Domain.AI;
+using Domain.NoteStructure;
 using ShareKernal;
 
 namespace Infrastructure.NoteStructure;

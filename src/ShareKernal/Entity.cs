@@ -1,4 +1,4 @@
-namespace Domain.Shared;
+namespace ShareKernal;
 
 public abstract class Entity<TId>
 {

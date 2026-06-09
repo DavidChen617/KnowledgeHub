@@ -1,6 +1,7 @@
-using Domain.Shared;
+using ShareKernal;
 
-namespace Domain.AI;
+
+namespace Domain.NoteStructure;
 
 public enum ChunkSource { Raw, Structured }
 

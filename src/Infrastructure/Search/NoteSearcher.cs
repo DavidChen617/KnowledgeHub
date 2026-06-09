@@ -1,4 +1,4 @@
-using Domain.AI;
+using Domain.NoteStructure;
 using Domain.Users;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

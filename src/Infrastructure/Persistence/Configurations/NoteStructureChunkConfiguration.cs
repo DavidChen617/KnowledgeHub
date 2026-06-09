@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using DAI = Domain.AI;
+using DAI = Domain.NoteStructure;
 
 namespace Infrastructure.Persistence.Configurations;
 

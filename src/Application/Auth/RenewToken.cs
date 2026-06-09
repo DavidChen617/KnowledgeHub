@@ -1,5 +1,5 @@
 using CoreMesh.Dispatching.Abstractions;
-using Domain.Shared;
+
 using Domain.Users;
 using ShareKernal;
 using static Application.Auth.AuthErrors;

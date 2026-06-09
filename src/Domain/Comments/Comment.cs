@@ -1,6 +1,6 @@
 using Domain.Comments.Events;
 using Domain.Notes;
-using Domain.Shared;
+
 using Domain.Users;
 using ShareKernal;
 
