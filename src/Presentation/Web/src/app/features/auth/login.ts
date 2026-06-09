@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit {
       const params = new URLSearchParams(hash);
       const idToken = params.get('id_token');
       if (idToken) {
-        window.history.replaceState(null, '', '/login');
+        window.history.replaceState(null, '', new URL('login', document.baseURI).pathname);
         this.loading.set(true);
         this.auth.exchangeGoogleToken(idToken)
           .then(() => this.router.navigate(['/notes']))
@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
     sessionStorage.setItem('google_nonce', nonce);
     const params = new URLSearchParams({
       client_id: environment.googleClientId,
-      redirect_uri: `${window.location.origin}/login`,
+      redirect_uri: new URL('login', document.baseURI).href,
       response_type: 'id_token',
       scope: 'openid email profile',
       nonce,
