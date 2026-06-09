@@ -18,7 +18,7 @@ export class CommentService {
 
   async listForShare(token: string): Promise<Comment[]> {
     const res = await firstValueFrom(
-      this.http.get<ApiResponse<{ comments: Comment[] }>>(`${this.base}/share/${token}/comments`)
+      this.http.get<ApiResponse<{ comments: Comment[] }>>(`${this.base}/api/share/${token}/comments`)
     );
     return res.data?.comments ?? [];
   }
@@ -31,7 +31,7 @@ export class CommentService {
 
   async addToShare(token: string, content: string, parentCommentId?: string): Promise<void> {
     await firstValueFrom(
-      this.http.post(`${this.base}/share/${token}/comments`, { content, parentCommentId })
+      this.http.post(`${this.base}/api/share/${token}/comments`, { content, parentCommentId })
     );
   }
 

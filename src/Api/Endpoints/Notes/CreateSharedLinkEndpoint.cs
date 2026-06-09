@@ -26,7 +26,7 @@ public sealed class CreateSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
     {
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         var result = await dispatcher.Send(new CreateSharedLinkCommandRequest(new NoteId(id), currentUser.Id), ct);
-        return result.ToHttpResult(v => new CreateSharedLinkResponse($"{baseUrl}/share/{v.Token}"));
+        return result.ToHttpResult(v => new CreateSharedLinkResponse($"{baseUrl}/knowledgehub/share/{v.Token}"));
     }
 }
 

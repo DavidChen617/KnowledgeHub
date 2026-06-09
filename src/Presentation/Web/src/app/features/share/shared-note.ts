@@ -156,7 +156,7 @@ export class SharedNoteComponent implements OnInit {
     const token = this.route.snapshot.paramMap.get('token')!;
     try {
       const res = await firstValueFrom(
-        this.http.get<{ data: SharedNote; isSuccess: boolean }>(`${environment.apiUrl}/share/${token}`)
+        this.http.get<{ data: SharedNote; isSuccess: boolean }>(`${environment.apiUrl}/api/share/${token}`)
       );
       if (!res.isSuccess || !res.data) { this.notFound.set(true); return; }
       this.note.set(res.data);
