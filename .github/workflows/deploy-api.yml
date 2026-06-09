@@ -42,6 +42,12 @@ jobs:
           docker build -f src/Api/Dockerfile -t davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }} .
           docker push davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }}
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '11.0.x'
+          dotnet-quality: 'preview'
+
       - name: Generate migration script
         run: |
           dotnet tool install -g dotnet-ef
