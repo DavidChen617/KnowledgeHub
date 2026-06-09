@@ -59,10 +59,9 @@ jobs:
           fetch-depth: 2
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '11.0.x'
-          dotnet-quality: 'preview'
+        run: |
+          curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 11.0 --quality preview --install-dir "$HOME/.dotnet"
+          echo "$HOME/.dotnet" >> $GITHUB_PATH
 
       - name: Run migrations
         env:
