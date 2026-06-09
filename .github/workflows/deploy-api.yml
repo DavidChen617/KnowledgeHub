@@ -48,9 +48,51 @@ jobs:
           name: k8s-manifests
           path: infra/
 
-  deploy:
+  migrate:
     runs-on: self-hosted
     needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check migration changes
+        id: check
+        run: |
+          if git diff ${{ github.event.before }} ${{ github.sha }} --name-only | grep -q "src/Infrastructure/Persistence/Migrations/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run migrations
+        if: steps.check.outputs.changed == 'true'
+        env:
+          K8S_ENV: ${{ secrets.K8S_ENV }}
+        run: |
+          echo "$K8S_ENV" > /tmp/.env
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line//[[:space:]]/}" ]] && continue
+            [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
+            key="${line%%=*}"
+            value="${line#*=}"
+            value="${value#\"}" value="${value%\"}"
+            export "$key=$value"
+          done < /tmp/.env
+          rm /tmp/.env
+          dotnet tool install -g dotnet-ef --ignore-failed-sources || true
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef database update \
+            --project src/Infrastructure \
+            --startup-project src/Api \
+            --connection "$DB_CONNECTION_STRING"
+
+  deploy:
+    runs-on: self-hosted
+    needs: [build, migrate]
 
     steps:
       - name: Download k8s manifests
