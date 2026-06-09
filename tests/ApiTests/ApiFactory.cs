@@ -5,8 +5,8 @@ using System.Text;
 using Application.Interfaces;
 using Confluent.Kafka;
 using CoreMesh.Outbox.Abstractions;
-using Domain.AI;
 using Domain.Notes;
+using Domain.NoteStructure;
 using Domain.Notifications;
 using Domain.Users;
 using Infrastructure.Persistence;
@@ -49,7 +49,9 @@ public class ApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<IDatabase>();
             services.RemoveAll<IServer>();
             services.RemoveAll<ICacher>();
+            services.RemoveAll<IStructureRateLimiter>();
             services.AddSingleton<ICacher, FakeCacher>();
+            services.AddScoped<IStructureRateLimiter, FakeStructureRateLimiter>();
 
             // Remove Kafka producer/consumer and outbox messaging
             services.RemoveAll<IProducer<string, string>>();

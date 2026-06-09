@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Application.Interfaces;
 using CoreMesh.Outbox.Abstractions;
-using Domain.AI;
 using Domain.Notes;
+using Domain.NoteStructure;
 using Domain.Notifications;
 using ShareKernal;
 
@@ -61,6 +61,12 @@ public class FakeMessageSubscriber : IMessageSubscriber
     public Task AckAsync(EventEnvelope envelope, CancellationToken cancellationToken) => Task.CompletedTask;
     public Task NackAsync(EventEnvelope envelope, CancellationToken cancellationToken) => Task.CompletedTask;
     public Task RetryAsync(EventEnvelope envelope, CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
+public class FakeStructureRateLimiter : IStructureRateLimiter
+{
+    public Task<bool> IsAllowedAsync(Guid userId, CancellationToken ct = default) =>
+        Task.FromResult(true);
 }
 
 public class FakeCacher : ICacher
