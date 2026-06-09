@@ -42,48 +42,45 @@ jobs:
           docker build -f src/Api/Dockerfile -t davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }} .
           docker push davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }}
 
+      - name: Generate migration script
+        run: |
+          dotnet tool install -g dotnet-ef
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef migrations script --idempotent \
+            -p src/Infrastructure \
+            -s src/Api \
+            -o migration.sql
+
       - name: Upload k8s manifests
         uses: actions/upload-artifact@v4
         with:
           name: k8s-manifests
           path: infra/
 
+      - name: Upload migration script
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-sql
+          path: migration.sql
+
   migrate:
     runs-on: self-hosted
     needs: build
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download migration script
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 2
+          name: migration-sql
 
-      - name: Setup .NET
+      - name: Apply migrations
         run: |
-          curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 11.0 --quality preview --install-dir "$HOME/.dotnet"
-          echo "$HOME/.dotnet" >> $GITHUB_PATH
-
-      - name: Run migrations
-        env:
-          K8S_ENV: ${{ secrets.K8S_ENV }}
-        run: |
-          echo "$K8S_ENV" > /tmp/.env
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            [[ "$line" =~ ^[[:space:]]*# ]] && continue
-            [[ -z "${line//[[:space:]]/}" ]] && continue
-            [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
-            key="${line%%=*}"
-            value="${line#*=}"
-            value="${value#\"}" value="${value%\"}"
-            export "$key=$value"
-          done < /tmp/.env
-          rm /tmp/.env
-          dotnet tool install -g dotnet-ef --ignore-failed-sources || true
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          dotnet ef database update \
-            --project src/Infrastructure \
-            --startup-project src/Api \
-            --connection "$DB_CONNECTION_STRING"
+          POSTGRES_USER=$(kubectl get secret postgres-secret -o jsonpath='{.data.POSTGRES_USER}' | base64 -d)
+          POSTGRES_DB=$(kubectl get secret postgres-secret -o jsonpath='{.data.POSTGRES_DB}' | base64 -d)
+          POSTGRES_POD=$(kubectl get pods -l app=postgres -o jsonpath='{.items[0].metadata.name}')
+          kubectl cp migration.sql default/$POSTGRES_POD:/tmp/migration.sql
+          kubectl exec $POSTGRES_POD -- psql -U $POSTGRES_USER -d $POSTGRES_DB -f /tmp/migration.sql
+          kubectl exec $POSTGRES_POD -- rm /tmp/migration.sql
 
   deploy:
     runs-on: self-hosted
