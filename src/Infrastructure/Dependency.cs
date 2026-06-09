@@ -3,18 +3,17 @@ using System.Reflection;
 using Application.Interfaces;
 using Confluent.Kafka;
 using CoreMesh.Outbox.Extensions;
-using Domain.AI;
 using Domain.Categories;
 using Domain.Comments;
-using Domain.Notifications;
 using Domain.Notes;
-using Domain.Shared;
+using Domain.NoteStructure;
+using Domain.Notifications;
 using Domain.Users;
 using Infrastructure.Auth;
 using Infrastructure.Cache;
 using Infrastructure.Email;
-using Infrastructure.FileStore;
 using Infrastructure.Embedding;
+using Infrastructure.FileStore;
 using Infrastructure.ImageDescription;
 using Infrastructure.Messaging;
 using Infrastructure.Messaging.Kafka;
@@ -23,10 +22,11 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repositories;
 using Infrastructure.Search;
-using StackExchange.Redis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ShareKernal;
+using StackExchange.Redis;
 
 namespace Infrastructure;
 
@@ -50,7 +50,8 @@ public static class Dependency
                 configuration["Cloudinary:CloudName"],
                 configuration["Cloudinary:ApiKey"],
                 configuration["Cloudinary:ApiSecret"]
-            )) { Api = { Secure = true } });
+            ))
+            { Api = { Secure = true } });
 
             services.AddScoped<IImageStorage, CloudinaryImageStorage>();
             services.AddScoped<IEmailSender, SmtpEmailSender>();
@@ -67,6 +68,7 @@ public static class Dependency
                 });
 
             services.AddSingleton<ICacher, RedisCacher>();
+            services.AddScoped<IStructureRateLimiter, RedisStructureRateLimiter>();
 
             services.AddDbContext<AppDbContext>((sp, options) =>
             {
@@ -81,7 +83,7 @@ public static class Dependency
             services.AddSingleton<IProducer<string, string>>(_ =>
                 new ProducerBuilder<string, string>(new ProducerConfig
                 {
-                    BootstrapServers = bootstrapServers, 
+                    BootstrapServers = bootstrapServers,
                     Acks = Acks.All
                 }).Build());
 

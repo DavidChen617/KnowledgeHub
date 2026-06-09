@@ -1,14 +1,14 @@
+using Application.Interfaces;
 using CoreMesh.Dispatching.Abstractions;
-using Domain.AI;
 using Domain.Notes;
-using Domain.Shared;
+using Domain.NoteStructure;
 using ShareKernal;
 using static Application.Notes.NoteErrors;
 using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record StructureNoteCommandRequest(NoteId NoteId, string Prompt)
+public record StructureNoteCommandRequest(NoteId NoteId, string Prompt, Guid UserId)
     : IRequest<Result<StructureNoteCommandResponse>>;
 
 public record StructureNoteCommandResponse(Guid StructureId, string Description, string Content);
@@ -18,12 +18,16 @@ public class StructureNoteHandler(
     INoteStructurer structurer,
     IEmbedder embedder,
     IImageDescriber imageDescriber,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IStructureRateLimiter rateLimiter)
     : IRequestHandler<StructureNoteCommandRequest, Result<StructureNoteCommandResponse>>
 {
     public async Task<Result<StructureNoteCommandResponse>> Handle(StructureNoteCommandRequest command,
         CancellationToken cancellationToken = default)
     {
+        if (!await rateLimiter.IsAllowedAsync(command.UserId, cancellationToken))
+            return new Error("RateLimit.Exceeded", "AI 結構化功能每小時限制 5 次，請稍後再試。", ErrorType.TooManyRequests);
+
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
 
         if (note is null)
