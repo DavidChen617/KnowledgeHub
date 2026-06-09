@@ -76,6 +76,7 @@ jobs:
             [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
             key="${line%%=*}"
             value="${line#*=}"
+            value="${value#\"}" value="${value%\"}"
             export "$key=$value"
           done < /tmp/.env
           envsubst < infra/k8s/postgres/secret.yaml | kubectl apply -f -
