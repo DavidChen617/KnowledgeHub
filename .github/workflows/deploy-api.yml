@@ -46,6 +46,7 @@ jobs:
         run: |
           dotnet tool install -g dotnet-ef
           export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet restore src/Api/Api.csproj
           dotnet ef migrations script --idempotent \
             -p src/Infrastructure \
             -s src/Api \
