@@ -72,7 +72,9 @@ jobs:
             [[ "$line" =~ ^[[:space:]]*# ]] && continue
             [[ -z "${line//[[:space:]]/}" ]] && continue
             [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || continue
-            eval "export $line"
+            key="${line%%=*}"
+            value="${line#*=}"
+            export "$key=$value"
           done < /tmp/.env
           envsubst < infra/k8s/postgres/secret.yaml | kubectl apply -f -
           envsubst < infra/k8s/api/secret.yaml | kubectl apply -f -
