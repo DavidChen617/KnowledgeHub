@@ -14,6 +14,7 @@ on:
       - 'infra/k8s/postgres/**'
       - 'infra/k8s/redis/**'
       - 'infra/k8s/kafka/**'
+      - 'infra/configs/**'
       - '.github/workflows/deploy-api.yml'
 
 jobs:
@@ -41,13 +42,28 @@ jobs:
           docker build -f src/Api/Dockerfile -t davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }} .
           docker push davidchen617/knowledgehub-api:${{ steps.meta.outputs.tag }}
 
+      - name: Upload k8s manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-manifests
+          path: infra/
+
   deploy:
     runs-on: self-hosted
     needs: build
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download k8s manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: k8s-manifests
+          path: infra/
+
+      - name: Apply ConfigMaps
+        run: |
+          kubectl create configmap redis-config \
+            --from-file=redis.conf=infra/configs/redis.conf \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply secrets
         run: |
