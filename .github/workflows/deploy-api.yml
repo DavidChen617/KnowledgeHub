@@ -66,8 +66,10 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply secrets
+        env:
+          K8S_ENV: ${{ secrets.K8S_ENV }}
         run: |
-          echo "${{ secrets.K8S_ENV }}" > /tmp/.env
+          echo "$K8S_ENV" > /tmp/.env
           while IFS= read -r line || [[ -n "$line" ]]; do
             [[ "$line" =~ ^[[:space:]]*# ]] && continue
             [[ -z "${line//[[:space:]]/}" ]] && continue
