@@ -12,6 +12,7 @@ spec:
       labels:
         app: kafka
     spec:
+      enableServiceLinks: false
       nodeSelector:
         kubernetes.io/hostname: worker2-vm
       containers:
