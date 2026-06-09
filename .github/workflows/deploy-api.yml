@@ -58,17 +58,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Check migration changes
-        id: check
-        run: |
-          if git diff ${{ github.event.before }} ${{ github.sha }} --name-only | grep -q "src/Infrastructure/Persistence/Migrations/"; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Run migrations
-        if: steps.check.outputs.changed == 'true'
         env:
           K8S_ENV: ${{ secrets.K8S_ENV }}
         run: |
