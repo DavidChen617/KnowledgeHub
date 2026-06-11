@@ -1,3 +1,4 @@
+using Domain.Users.Events;
 using ShareKernal;
 
 
@@ -24,8 +25,12 @@ public class User : AggregateRoot<UserId>
         AvatarUrl = avatarUrl;
     }
 
-    public static User Create(string email, string username, string? avatarUrl = null) =>
-        new(UserId.New(), email, username, avatarUrl);
+    public static User Create(string email, string username, string? avatarUrl = null)
+    {
+        var user = new User(UserId.New(), email, username, avatarUrl);
+        user.RaiseDomainEvent(new UserRegisteredEvent(user.Id.Value, email));
+        return user;
+    }
 
     public void UpdateAvatar(string? avatarUrl) => AvatarUrl = avatarUrl;
 }
