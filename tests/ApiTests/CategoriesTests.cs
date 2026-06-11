@@ -40,7 +40,7 @@ public class CategoriesTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var client = factory.CreateAuthenticatedClient();
         var created = await client.PostAsJsonAsync("/api/categories", new { name = "OldName" });
         var catId = (await created.Content.ReadFromJsonAsync<JsonElement>(JsonOpts))
-            .GetProperty("data").GetProperty("categoryId").GetGuid();
+            .GetProperty("data").GetProperty("id").GetGuid();
 
         var response = await client.PutAsJsonAsync($"/api/categories/{catId}", new { name = "NewName" });
 
@@ -53,7 +53,7 @@ public class CategoriesTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var client = factory.CreateAuthenticatedClient();
         var created = await client.PostAsJsonAsync("/api/categories", new { name = "ToDelete" });
         var catId = (await created.Content.ReadFromJsonAsync<JsonElement>(JsonOpts))
-            .GetProperty("data").GetProperty("categoryId").GetGuid();
+            .GetProperty("data").GetProperty("id").GetGuid();
 
         var response = await client.DeleteAsync($"/api/categories/{catId}");
 
