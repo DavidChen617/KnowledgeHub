@@ -13,11 +13,7 @@ spec:
         app: api
     spec:
       nodeSelector:
-        kubernetes.io/hostname: control-plane-vm
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
+        kubernetes.io/hostname: ingress-vm
       containers:
         - name: api
           image: davidchen617/knowledgehub-api:IMAGE_TAG
