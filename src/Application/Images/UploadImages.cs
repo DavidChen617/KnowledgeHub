@@ -4,7 +4,7 @@ using ShareKernal;
 
 namespace Application.Images;
 
-public record UploadImagesCommandRequest(IReadOnlyList<ImageUploadItem> Items)
+public record UploadImagesCommand(IReadOnlyList<ImageUploadItem> Items)
     : IRequest<Result<IReadOnlyList<UploadedImageResult>>>;
 
 public record ImageUploadItem(Stream Content, string FileName);
@@ -12,10 +12,10 @@ public record ImageUploadItem(Stream Content, string FileName);
 public record UploadedImageResult(string OriginalName, string StorageKey);
 
 public class UploadImagesHandler(IImageStorage imageStorage)
-    : IRequestHandler<UploadImagesCommandRequest, Result<IReadOnlyList<UploadedImageResult>>>
+    : IRequestHandler<UploadImagesCommand, Result<IReadOnlyList<UploadedImageResult>>>
 {
     public async Task<Result<IReadOnlyList<UploadedImageResult>>> Handle(
-        UploadImagesCommandRequest command, CancellationToken ct)
+        UploadImagesCommand command, CancellationToken ct)
     {
         var tasks = command.Items.Select(async item =>
         {

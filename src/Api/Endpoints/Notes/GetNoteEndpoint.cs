@@ -12,7 +12,7 @@ public sealed class GetNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/{id:guid}", HandleAsync)
-            .Produces<Response<GetNoteQueryResponse>>(StatusCodes.Status200OK)
+            .Produces<Response<GetNoteDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
@@ -23,7 +23,7 @@ public sealed class GetNoteEndpoint : IGroupedEndpoint<NotesGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new GetNoteQueryRequest(new NoteId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new GetNoteQuery(new NoteId(id), currentUser.Id), ct);
         return result.ToHttpResult();
     }
 }

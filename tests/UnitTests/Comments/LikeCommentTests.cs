@@ -15,7 +15,7 @@ public class LikeCommentTests
         var repo = new FakeCommentRepository(comment, existingLike: null);
         var handler = new LikeCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new LikeCommentCommandRequest(comment.Id, UserId.New()));
+        var result = await handler.Handle(new LikeCommentCommand(comment.Id, UserId.New()));
 
         Assert.True(result.IsSuccess);
         Assert.True(repo.LikeWasAdded);
@@ -30,7 +30,7 @@ public class LikeCommentTests
         var repo = new FakeCommentRepository(comment, existingLike);
         var handler = new LikeCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new LikeCommentCommandRequest(comment.Id, userId));
+        var result = await handler.Handle(new LikeCommentCommand(comment.Id, userId));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CommentErrors.AlreadyLiked.Code, result.Error.Code);
@@ -43,7 +43,7 @@ public class LikeCommentTests
         var repo = new FakeCommentRepository(returnComment: null, existingLike: null);
         var handler = new LikeCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new LikeCommentCommandRequest(CommentId.New(), UserId.New()));
+        var result = await handler.Handle(new LikeCommentCommand(CommentId.New(), UserId.New()));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.Error.Type);

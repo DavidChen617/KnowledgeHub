@@ -8,7 +8,7 @@ using static ShareKernal.Result;
 
 namespace Application.Auth;
 
-public record ExchangeTokenCommandRequest(string ExternalToken, string BaseUrl) : IRequest<Result<TokenResponse>>;
+public record ExchangeTokenCommand(string ExternalToken, string BaseUrl) : IRequest<Result<TokenResponse>>;
 
 public record TokenResponse(string AccessToken, string RefreshToken, int ExpiresIn);
 
@@ -17,9 +17,9 @@ public class ExchangeTokenHandler(
     IUserRepository userRepository,
     IImageStorage imageStorage,
     ITokenIssuer tokenIssuer,
-    IUnitOfWork unitOfWork) : IRequestHandler<ExchangeTokenCommandRequest, Result<TokenResponse>>
+    IUnitOfWork unitOfWork) : IRequestHandler<ExchangeTokenCommand, Result<TokenResponse>>
 {
-    public async Task<Result<TokenResponse>> Handle(ExchangeTokenCommandRequest command, CancellationToken ct)
+    public async Task<Result<TokenResponse>> Handle(ExchangeTokenCommand command, CancellationToken ct)
     {
         var identity = await identityProvider.ValidateAsync(command.ExternalToken, ct);
         if (identity is null) return InvalidToken;

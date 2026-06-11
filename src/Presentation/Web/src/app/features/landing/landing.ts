@@ -94,7 +94,7 @@ const FEATURES = [
         <!-- Footer -->
         <footer class="flex items-center justify-between text-[var(--color-muted)] font-mono text-xs border-t border-[var(--color-border)] pt-6">
           <span>KnowledgeHub</span>
-          <span>期末專題 · 2025</span>
+
         </footer>
 
       </div>

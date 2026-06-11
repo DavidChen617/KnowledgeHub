@@ -25,7 +25,7 @@ public sealed class DeleteCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(
-            new DeleteCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
+            new DeleteCommentCommand(new CommentId(id), currentUser.Id), ct);
 
         return result.ToNoContent();
     }

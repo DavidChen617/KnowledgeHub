@@ -21,7 +21,7 @@ public sealed class GoogleTokenEndpoint : IGroupedEndpoint<OAuthGroup>
         CancellationToken ct)
     {
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
-        var result = await dispatcher.Send(new ExchangeTokenCommandRequest(req.IdToken, baseUrl), ct);
+        var result = await dispatcher.Send(new ExchangeTokenCommand(req.IdToken, baseUrl), ct);
         return result.ToHttpResult();
     }
 }

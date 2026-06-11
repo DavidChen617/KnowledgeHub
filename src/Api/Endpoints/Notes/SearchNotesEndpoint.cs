@@ -11,7 +11,7 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapGet("/search", HandleAsync)
-            .Produces<Response<SearchQueryResponse>>(StatusCodes.Status200OK)
+            .Produces<Response<SearchDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status503ServiceUnavailable);
     }
@@ -22,7 +22,7 @@ public sealed class SearchNotesEndpoint : IGroupedEndpoint<NotesGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new SearchQueryRequest(currentUser.Id, q), ct);
+        var result = await dispatcher.Send(new SearchQuery(currentUser.Id, q), ct);
         return result.ToHttpResult();
     }
 }

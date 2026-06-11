@@ -6,16 +6,16 @@ using ShareKernal;
 
 namespace Application.Notes;
 
-public record GetNoteGraphQueryRequest(UserId UserId) : IRequest<Result<GetNoteGraphQueryResponse>>;
+public record GetNoteGraphQuery(UserId UserId) : IRequest<Result<GetNoteGraphDto>>;
 
 public record GraphNode(string Id, string Type, string Label);
 public record GraphEdge(string Source, string Target, string Type);
-public record GetNoteGraphQueryResponse(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
+public record GetNoteGraphDto(IReadOnlyList<GraphNode> Nodes, IReadOnlyList<GraphEdge> Edges);
 
 public class GetNoteGraphHandler(INoteRepository noteRepository, ICategoryRepository categoryRepository)
-    : IRequestHandler<GetNoteGraphQueryRequest, Result<GetNoteGraphQueryResponse>>
+    : IRequestHandler<GetNoteGraphQuery, Result<GetNoteGraphDto>>
 {
-    public async Task<Result<GetNoteGraphQueryResponse>> Handle(GetNoteGraphQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNoteGraphDto>> Handle(GetNoteGraphQuery query, CancellationToken cancellationToken = default)
     {
         var notes = await noteRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
         var categories = await categoryRepository.GetAllByUserIdAsync(query.UserId, cancellationToken);
@@ -39,6 +39,6 @@ public class GetNoteGraphHandler(INoteRepository noteRepository, ICategoryReposi
                 edges.Add(new GraphEdge($"note-{note.Id.Value}", $"note-{linkedId.Value}", "link"));
         }
 
-        return Result.Success(new GetNoteGraphQueryResponse(nodes, edges));
+        return Result.Success(new GetNoteGraphDto(nodes, edges));
     }
 }

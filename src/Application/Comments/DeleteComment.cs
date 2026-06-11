@@ -8,12 +8,12 @@ using static ShareKernal.Result;
 
 namespace Application.Comments;
 
-public record DeleteCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<Result>;
+public record DeleteCommentCommand(CommentId CommentId, UserId UserId) : IRequest<Result>;
 
 public class DeleteCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteCommentCommandRequest, Result>
+    : IRequestHandler<DeleteCommentCommand, Result>
 {
-    public async Task<Result> Handle(DeleteCommentCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(DeleteCommentCommand command, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
         if (comment is null) return NotFound;

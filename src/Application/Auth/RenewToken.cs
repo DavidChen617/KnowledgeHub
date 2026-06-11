@@ -7,14 +7,14 @@ using static ShareKernal.Result;
 
 namespace Application.Auth;
 
-public record RenewTokenCommandRequest(string RawRefreshToken) : IRequest<Result<TokenResponse>>;
+public record RenewTokenCommand(string RawRefreshToken) : IRequest<Result<TokenResponse>>;
 
 public class RenewTokenHandler(
     IUserRepository userRepository,
     ITokenIssuer tokenIssuer,
-    IUnitOfWork unitOfWork) : IRequestHandler<RenewTokenCommandRequest, Result<TokenResponse>>
+    IUnitOfWork unitOfWork) : IRequestHandler<RenewTokenCommand, Result<TokenResponse>>
 {
-    public async Task<Result<TokenResponse>> Handle(RenewTokenCommandRequest command, CancellationToken ct)
+    public async Task<Result<TokenResponse>> Handle(RenewTokenCommand command, CancellationToken ct)
     {
         var hash = TokenHasher.Hash(command.RawRefreshToken);
         var existing = await userRepository.FindRefreshTokenByHashAsync(hash, ct);

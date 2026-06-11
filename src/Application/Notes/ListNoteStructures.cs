@@ -7,18 +7,18 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record ListNoteStructuresQueryRequest(NoteId NoteId, UserId UserId)
-    : IRequest<Result<ListNoteStructuresQueryResponse>>;
+public record ListNoteStructuresQuery(NoteId NoteId, UserId UserId)
+    : IRequest<Result<ListNoteStructuresDto>>;
 
 public record NoteStructureSummary(Guid StructureId, string Description, string Content, DateTime CreatedAt);
 
-public record ListNoteStructuresQueryResponse(IReadOnlyList<NoteStructureSummary> Structures);
+public record ListNoteStructuresDto(IReadOnlyList<NoteStructureSummary> Structures);
 
 public class ListNoteStructuresHandler(INoteRepository noteRepository)
-    : IRequestHandler<ListNoteStructuresQueryRequest, Result<ListNoteStructuresQueryResponse>>
+    : IRequestHandler<ListNoteStructuresQuery, Result<ListNoteStructuresDto>>
 {
-    public async Task<Result<ListNoteStructuresQueryResponse>> Handle(
-        ListNoteStructuresQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<ListNoteStructuresDto>> Handle(
+        ListNoteStructuresQuery query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(query.NoteId, query.UserId, cancellationToken);
 
@@ -30,6 +30,6 @@ public class ListNoteStructuresHandler(INoteRepository noteRepository)
             .Select(s => new NoteStructureSummary(s.Id, s.Description, s.Content, s.CreatedAt))
             .ToList();
 
-        return Success(new ListNoteStructuresQueryResponse(summaries));
+        return Success(new ListNoteStructuresDto(summaries));
     }
 }

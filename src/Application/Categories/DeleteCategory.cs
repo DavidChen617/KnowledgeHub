@@ -8,13 +8,13 @@ using static ShareKernal.Result;
 
 namespace Application.Categories;
 
-public record DeleteCategoryCommandRequest(CategoryId CategoryId, UserId UserId)
+public record DeleteCategoryCommand(CategoryId CategoryId, UserId UserId)
     : IRequest<Result>;
 
 public class DeleteCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteCategoryCommandRequest, Result>
+    : IRequestHandler<DeleteCategoryCommand, Result>
 {
-    public async Task<Result> Handle(DeleteCategoryCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken = default)
     {
         var category = await categoryRepository.GetByIdAndUserIdAsync(command.CategoryId, command.UserId, cancellationToken);
 

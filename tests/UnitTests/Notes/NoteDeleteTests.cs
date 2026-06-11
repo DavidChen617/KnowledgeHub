@@ -14,7 +14,7 @@ public class NoteDeleteTests
         var repo = new FakeNoteRepository(returnNote: null);
         var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new DeleteNoteCommandRequest(NoteId.New(), UserId.New()));
+        var result = await handler.Handle(new DeleteNoteCommand(NoteId.New(), UserId.New()));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.Error.Type);
@@ -29,7 +29,7 @@ public class NoteDeleteTests
         var repo = new FakeNoteRepository(note);
         var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new DeleteNoteCommandRequest(note.Id, userId));
+        var result = await handler.Handle(new DeleteNoteCommand(note.Id, userId));
 
         Assert.True(result.IsSuccess);
         Assert.True(repo.WasDeleted);
@@ -45,7 +45,7 @@ public class NoteDeleteTests
         var repo = new FakeNoteRepository(note);
         var handler = new DeleteNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        await handler.Handle(new DeleteNoteCommandRequest(note.Id, userId));
+        await handler.Handle(new DeleteNoteCommand(note.Id, userId));
 
         var ev = Assert.Single(note.DomainEvents.OfType<NoteDeletedEvent>());
         Assert.Contains(imageUrl, ev.ImageUrls);

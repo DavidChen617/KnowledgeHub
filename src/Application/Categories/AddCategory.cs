@@ -8,15 +8,15 @@ using static ShareKernal.Result;
 
 namespace Application.Categories;
 
-public record AddCategoryCommandRequest(UserId UserId, string Name)
-    : IRequest<Result<AddCategoryCommandResponse>>;
+public record AddCategoryCommand(UserId UserId, string Name)
+    : IRequest<Result<AddCategoryDto>>;
 
-public record AddCategoryCommandResponse(Guid CategoryId, string Name);
+public record AddCategoryDto(Guid Id, string Name);
 
 public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<AddCategoryCommandRequest, Result<AddCategoryCommandResponse>>
+    : IRequestHandler<AddCategoryCommand, Result<AddCategoryDto>>
 {
-    public async Task<Result<AddCategoryCommandResponse>> Handle(AddCategoryCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result<AddCategoryDto>> Handle(AddCategoryCommand command, CancellationToken cancellationToken = default)
     {
         var existing = await categoryRepository.GetAllByUserIdAsync(command.UserId, cancellationToken);
 
@@ -31,6 +31,6 @@ public class AddCategoryHandler(ICategoryRepository categoryRepository, IUnitOfW
         await categoryRepository.AddAsync(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Success(new AddCategoryCommandResponse(category.Id.Value, category.Name));
+        return Success(new AddCategoryDto(category.Id.Value, category.Name));
     }
 }
