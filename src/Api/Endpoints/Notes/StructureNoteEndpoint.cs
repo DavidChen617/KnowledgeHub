@@ -12,7 +12,7 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/{id:guid}/structure", HandleAsync)
-            .Produces<Response<StructureNoteCommandResponse>>(StatusCodes.Status200OK)
+            .Produces<Response<StructureNoteDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status503ServiceUnavailable);
@@ -26,7 +26,7 @@ public sealed class StructureNoteEndpoint : IGroupedEndpoint<NotesGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(
-            new StructureNoteCommandRequest(new NoteId(id), req.Prompt ?? "請將這篇筆記整理成有結構的格式，包含標題與重點摘要", currentUser.Id.Value), ct);
+            new StructureNoteCommand(new NoteId(id), req.Prompt ?? "請將這篇筆記整理成有結構的格式，包含標題與重點摘要", currentUser.Id.Value), ct);
 
         return result.ToHttpResult();
     }

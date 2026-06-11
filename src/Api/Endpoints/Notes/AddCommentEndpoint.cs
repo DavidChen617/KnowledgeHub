@@ -27,7 +27,7 @@ public sealed class AddCommentEndpoint : IGroupedEndpoint<NotesGroup>
     {
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(
-            new AddCommentCommandRequest(new NoteId(id), currentUser.Id, req.Content, parentId, null), ct);
+            new AddCommentCommand(new NoteId(id), currentUser.Id, req.Content, parentId, null), ct);
 
         return result.ToNoContent();
     }
