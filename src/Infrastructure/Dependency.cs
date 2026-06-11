@@ -54,7 +54,8 @@ public static class Dependency
             { Api = { Secure = true } });
 
             services.AddScoped<IImageStorage, CloudinaryImageStorage>();
-            services.AddScoped<IEmailSender, SmtpEmailSender>();
+            services.AddHttpClient<ResendEmailSender>();
+            services.AddScoped<IEmailSender, ResendEmailSender>();
 
             services
                 .AddSingleton<IConnectionMultiplexer>(_ =>
