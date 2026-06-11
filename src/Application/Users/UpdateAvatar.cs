@@ -7,12 +7,12 @@ using static ShareKernal.Result;
 
 namespace Application.Users;
 
-public record UpdateAvatarCommandRequest(UserId UserId, string AvatarUrl) : IRequest<Result>;
+public record UpdateAvatarCommand(UserId UserId, string AvatarUrl) : IRequest<Result>;
 
 public class UpdateAvatarHandler(IUserRepository userRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateAvatarCommandRequest, Result>
+    : IRequestHandler<UpdateAvatarCommand, Result>
 {
-    public async Task<Result> Handle(UpdateAvatarCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(UpdateAvatarCommand command, CancellationToken cancellationToken = default)
     {
         var user = await userRepository.GetByIdAsync(command.UserId, cancellationToken);
         if (user is null) return NotFound;

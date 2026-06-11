@@ -27,7 +27,7 @@ public sealed class UploadImagesEndpoint : IGroupedEndpoint<ApiImagesGroup>
             return Results.BadRequest("No files provided.");
 
         var items = files.Select(f => new ImageUploadItem(f.OpenReadStream(), f.FileName)).ToList();
-        var result = await dispatcher.Send(new UploadImagesCommandRequest(items), ct);
+        var result = await dispatcher.Send(new UploadImagesCommand(items), ct);
 
         var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
         return result.ToHttpResult(results => results

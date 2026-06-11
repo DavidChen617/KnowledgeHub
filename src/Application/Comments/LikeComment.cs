@@ -8,12 +8,12 @@ using static ShareKernal.Result;
 
 namespace Application.Comments;
 
-public record LikeCommentCommandRequest(CommentId CommentId, UserId UserId) : IRequest<Result>;
+public record LikeCommentCommand(CommentId CommentId, UserId UserId) : IRequest<Result>;
 
 public class LikeCommentHandler(ICommentRepository commentRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<LikeCommentCommandRequest, Result>
+    : IRequestHandler<LikeCommentCommand, Result>
 {
-    public async Task<Result> Handle(LikeCommentCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(LikeCommentCommand command, CancellationToken cancellationToken = default)
     {
         var comment = await commentRepository.GetByIdAsync(command.CommentId, cancellationToken);
         if (comment is null) return NotFound;

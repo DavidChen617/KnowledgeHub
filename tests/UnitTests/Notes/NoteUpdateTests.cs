@@ -13,7 +13,7 @@ public class NoteUpdateTests
         var repo = new FakeNoteRepository(returnNote: null);
         var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new UpdateNoteCommandRequest(NoteId.New(), UserId.New(), "新標題", null, null));
+        var result = await handler.Handle(new UpdateNoteCommand(NoteId.New(), UserId.New(), "新標題", null, null));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.Error.Type);
@@ -28,7 +28,7 @@ public class NoteUpdateTests
         var repo = new FakeNoteRepository(note);
         var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new UpdateNoteCommandRequest(note.Id, userId, "新標題", null, null));
+        var result = await handler.Handle(new UpdateNoteCommand(note.Id, userId, "新標題", null, null));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("新標題", result.Value.Title);
@@ -44,7 +44,7 @@ public class NoteUpdateTests
         var repo = new FakeNoteRepository(note);
         var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new UpdateNoteCommandRequest(note.Id, userId, null, "移除圖片的新內容", null));
+        var result = await handler.Handle(new UpdateNoteCommand(note.Id, userId, null, "移除圖片的新內容", null));
 
         Assert.True(result.IsSuccess);
         Assert.False(note.Images.Single(img => img.PublicUrl == imageUrl).Enable);
@@ -59,7 +59,7 @@ public class NoteUpdateTests
         var repo = new FakeNoteRepository(note);
         var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new UpdateNoteCommandRequest(note.Id, userId, null, "不含連結的新內容", null));
+        var result = await handler.Handle(new UpdateNoteCommand(note.Id, userId, null, "不含連結的新內容", null));
 
         Assert.True(result.IsSuccess);
         Assert.Empty(note.LinkedNoteIds);
@@ -73,7 +73,7 @@ public class NoteUpdateTests
         var repo = new FakeNoteRepository(note);
         var handler = new UpdateNoteHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new UpdateNoteCommandRequest(note.Id, userId, "最終標題", "最終內容", null));
+        var result = await handler.Handle(new UpdateNoteCommand(note.Id, userId, "最終標題", "最終內容", null));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("最終標題", result.Value.Title);

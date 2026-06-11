@@ -23,7 +23,7 @@ public sealed class UnlikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new UnlikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new UnlikeCommentCommand(new CommentId(id), currentUser.Id), ct);
         return result.ToNoContent();
     }
 }

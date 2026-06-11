@@ -8,12 +8,12 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record DeleteNoteCommandRequest(NoteId NoteId, UserId UserId) : IRequest<Result>;
+public record DeleteNoteCommand(NoteId NoteId, UserId UserId) : IRequest<Result>;
 
 public class DeleteNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteNoteCommandRequest, Result>
+    : IRequestHandler<DeleteNoteCommand, Result>
 {
-    public async Task<Result> Handle(DeleteNoteCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(DeleteNoteCommand command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
 

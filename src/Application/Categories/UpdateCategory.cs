@@ -8,15 +8,15 @@ using static ShareKernal.Result;
 
 namespace Application.Categories;
 
-public record UpdateCategoryCommandRequest(CategoryId CategoryId, UserId UserId, string Name)
-    : IRequest<Result<UpdateCategoryCommandResponse>>;
+public record UpdateCategoryCommand(CategoryId CategoryId, UserId UserId, string Name)
+    : IRequest<Result<UpdateCategoryDto>>;
 
-public record UpdateCategoryCommandResponse(Guid CategoryId, string Name);
+public record UpdateCategoryDto(Guid CategoryId, string Name);
 
 public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateCategoryCommandRequest, Result<UpdateCategoryCommandResponse>>
+    : IRequestHandler<UpdateCategoryCommand, Result<UpdateCategoryDto>>
 {
-    public async Task<Result<UpdateCategoryCommandResponse>> Handle(UpdateCategoryCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result<UpdateCategoryDto>> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken = default)
     {
         var category = await categoryRepository.GetByIdAndUserIdAsync(command.CategoryId, command.UserId, cancellationToken);
 
@@ -33,6 +33,6 @@ public class UpdateCategoryHandler(ICategoryRepository categoryRepository, IUnit
         await categoryRepository.Update(category, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Success(new UpdateCategoryCommandResponse(category.Id.Value, category.Name));
+        return Success(new UpdateCategoryDto(category.Id.Value, category.Name));
     }
 }

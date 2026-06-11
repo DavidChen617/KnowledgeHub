@@ -13,7 +13,7 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPut("/{id:guid}", HandleAsync)
-            .Produces<Response<UpdateNoteCommandResponse>>(StatusCodes.Status200OK)
+            .Produces<Response<UpdateNoteDto>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
@@ -28,7 +28,7 @@ public sealed class UpdateNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
         var result = await dispatcher.Send(
-            new UpdateNoteCommandRequest(new NoteId(id), currentUser.Id, req.Title, req.Content, categoryId), ct);
+            new UpdateNoteCommand(new NoteId(id), currentUser.Id, req.Title, req.Content, categoryId), ct);
 
         return result.ToHttpResult();
     }

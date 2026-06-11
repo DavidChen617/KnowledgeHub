@@ -24,7 +24,7 @@ public sealed class DeleteNoteEndpoint : IGroupedEndpoint<NotesGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(
-            new DeleteNoteCommandRequest(new NoteId(id), currentUser.Id), ct);
+            new DeleteNoteCommand(new NoteId(id), currentUser.Id), ct);
 
         return result.ToNoContent();
     }

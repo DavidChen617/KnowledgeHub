@@ -19,7 +19,7 @@ public sealed class RefreshTokenEndpoint : IGroupedEndpoint<OAuthGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new RenewTokenCommandRequest(req.RefreshToken), ct);
+        var result = await dispatcher.Send(new RenewTokenCommand(req.RefreshToken), ct);
         return result.ToHttpResult();
     }
 }

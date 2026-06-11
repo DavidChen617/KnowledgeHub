@@ -18,7 +18,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(comment);
         var handler = new EditCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new EditCommentCommandRequest(comment.Id, authorId, "更新內容"));
+        var result = await handler.Handle(new EditCommentCommand(comment.Id, authorId, "更新內容"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("更新內容", comment.Content);
@@ -32,7 +32,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(comment);
         var handler = new EditCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new EditCommentCommandRequest(comment.Id, UserId.New(), "嘗試修改"));
+        var result = await handler.Handle(new EditCommentCommand(comment.Id, UserId.New(), "嘗試修改"));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Forbidden, result.Error.Type);
@@ -45,7 +45,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(returnComment: null);
         var handler = new EditCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new EditCommentCommandRequest(CommentId.New(), UserId.New(), "內容"));
+        var result = await handler.Handle(new EditCommentCommand(CommentId.New(), UserId.New(), "內容"));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.Error.Type);
@@ -61,7 +61,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(comment);
         var handler = new DeleteCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new DeleteCommentCommandRequest(comment.Id, authorId));
+        var result = await handler.Handle(new DeleteCommentCommand(comment.Id, authorId));
 
         Assert.True(result.IsSuccess);
         Assert.True(repo.WasDeleted);
@@ -75,7 +75,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(comment);
         var handler = new DeleteCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new DeleteCommentCommandRequest(comment.Id, UserId.New()));
+        var result = await handler.Handle(new DeleteCommentCommand(comment.Id, UserId.New()));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Forbidden, result.Error.Type);
@@ -88,7 +88,7 @@ public class CommentOwnershipTests
         var repo = new FakeOwnershipCommentRepository(returnComment: null);
         var handler = new DeleteCommentHandler(repo, FakeUnitOfWork.Instance);
 
-        var result = await handler.Handle(new DeleteCommentCommandRequest(CommentId.New(), UserId.New()));
+        var result = await handler.Handle(new DeleteCommentCommand(CommentId.New(), UserId.New()));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.NotFound, result.Error.Type);

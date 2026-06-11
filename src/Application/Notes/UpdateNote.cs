@@ -9,15 +9,15 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record UpdateNoteCommandRequest(NoteId NoteId, UserId UserId, string? Title, string? Content, CategoryId? CategoryId)
-    : IRequest<Result<UpdateNoteCommandResponse>>;
+public record UpdateNoteCommand(NoteId NoteId, UserId UserId, string? Title, string? Content, CategoryId? CategoryId)
+    : IRequest<Result<UpdateNoteDto>>;
 
-public record UpdateNoteCommandResponse(Guid NoteId, string Title, string Content, Guid? CategoryId, DateTime UpdatedAt);
+public record UpdateNoteDto(Guid NoteId, string Title, string Content, Guid? CategoryId, DateTime UpdatedAt);
 
 public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<UpdateNoteCommandRequest, Result<UpdateNoteCommandResponse>>
+    : IRequestHandler<UpdateNoteCommand, Result<UpdateNoteDto>>
 {
-    public async Task<Result<UpdateNoteCommandResponse>> Handle(UpdateNoteCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result<UpdateNoteDto>> Handle(UpdateNoteCommand command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
 
@@ -39,6 +39,6 @@ public class UpdateNoteHandler(INoteRepository noteRepository, IUnitOfWork unitO
         await noteRepository.Update(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Success(new UpdateNoteCommandResponse(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
+        return Success(new UpdateNoteDto(note.Id.Value, note.Title, note.Content, note.CategoryId?.Value, note.UpdatedAt));
     }
 }

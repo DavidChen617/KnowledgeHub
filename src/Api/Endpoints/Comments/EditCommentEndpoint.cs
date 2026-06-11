@@ -26,7 +26,7 @@ public sealed class EditCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         CancellationToken ct)
     {
         var result = await dispatcher.Send(
-            new EditCommentCommandRequest(new CommentId(id), currentUser.Id, req.Content), ct);
+            new EditCommentCommand(new CommentId(id), currentUser.Id, req.Content), ct);
 
         return result.ToNoContent();
     }

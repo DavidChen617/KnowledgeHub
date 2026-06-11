@@ -7,9 +7,9 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record GetNoteQueryRequest(NoteId NoteId, UserId UserId) : IRequest<Result<GetNoteQueryResponse>>;
+public record GetNoteQuery(NoteId NoteId, UserId UserId) : IRequest<Result<GetNoteDto>>;
 
-public record GetNoteQueryResponse(
+public record GetNoteDto(
     Guid NoteId,
     string Title,
     string Content,
@@ -19,16 +19,16 @@ public record GetNoteQueryResponse(
     DateTime UpdatedAt);
 
 public class GetNoteHandler(INoteRepository noteRepository)
-    : IRequestHandler<GetNoteQueryRequest, Result<GetNoteQueryResponse>>
+    : IRequestHandler<GetNoteQuery, Result<GetNoteDto>>
 {
-    public async Task<Result<GetNoteQueryResponse>> Handle(GetNoteQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNoteDto>> Handle(GetNoteQuery query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(query.NoteId, query.UserId, cancellationToken);
 
         if (note is null)
             return NotFound;
 
-        return Success(new GetNoteQueryResponse(
+        return Success(new GetNoteDto(
             note.Id.Value,
             note.Title,
             note.Content,

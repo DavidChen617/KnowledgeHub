@@ -12,7 +12,7 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/", HandleAsync)
-            .Produces<Response<AddNoteCommandResponse>>(StatusCodes.Status201Created)
+            .Produces<Response<AddNoteDto>>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
@@ -25,7 +25,7 @@ public sealed class AddNoteEndpoint : IGroupedEndpoint<NotesGroup>
         var categoryId = req.CategoryId.HasValue ? new CategoryId(req.CategoryId.Value) : null;
 
         var result = await dispatcher.Send(
-            new AddNoteCommandRequest(currentUser.Id, req.Title, req.Content ?? string.Empty, categoryId), ct);
+            new AddNoteCommand(currentUser.Id, req.Title, req.Content ?? string.Empty, categoryId), ct);
 
         return result.ToCreated(v => $"/api/notes/{v.NoteId}");
     }

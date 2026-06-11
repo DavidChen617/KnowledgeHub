@@ -8,9 +8,9 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record GetNoteByTokenQueryRequest(string Token) : IRequest<Result<GetNoteByTokenQueryResponse>>;
+public record GetNoteByTokenQuery(string Token) : IRequest<Result<GetNoteByTokenDto>>;
 
-public record GetNoteByTokenQueryResponse(
+public record GetNoteByTokenDto(
     Guid NoteId,
     string Title,
     string Content,
@@ -23,13 +23,13 @@ public record GetNoteByTokenQueryResponse(
     string? AuthorAvatarUrl);
 
 public class GetNoteByTokenHandler(INoteRepository noteRepository, IUserRepository userRepository, ICacher cacher)
-    : IRequestHandler<GetNoteByTokenQueryRequest, Result<GetNoteByTokenQueryResponse>>
+    : IRequestHandler<GetNoteByTokenQuery, Result<GetNoteByTokenDto>>
 {
-    public async Task<Result<GetNoteByTokenQueryResponse>> Handle(GetNoteByTokenQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetNoteByTokenDto>> Handle(GetNoteByTokenQuery query, CancellationToken cancellationToken = default)
     {
         var key = CacheKeys.NoteByToken(query.Token);
 
-        var cached = await cacher.GetAsync<GetNoteByTokenQueryResponse>(key, cancellationToken);
+        var cached = await cacher.GetAsync<GetNoteByTokenDto>(key, cancellationToken);
         if (cached is not null) return Success(cached);
 
         var note = await noteRepository.GetBySharedTokenAsync(query.Token, cancellationToken);
@@ -37,7 +37,7 @@ public class GetNoteByTokenHandler(INoteRepository noteRepository, IUserReposito
 
         var author = await userRepository.GetByIdAsync(note.UserId, cancellationToken);
 
-        var response = new GetNoteByTokenQueryResponse(
+        var response = new GetNoteByTokenDto(
             note.Id.Value,
             note.Title,
             note.Content,

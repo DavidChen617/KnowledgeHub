@@ -8,7 +8,7 @@ using static ShareKernal.Result;
 
 namespace Application.Comments;
 
-public record GetCommentsQueryRequest(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<Result<GetCommentsQueryResponse>>;
+public record GetCommentsQuery(NoteId NoteId, UserId? UserId, string? ShareToken) : IRequest<Result<GetCommentsDto>>;
 
 public record CommentResponse(
     Guid CommentId,
@@ -22,15 +22,15 @@ public record CommentResponse(
     DateTime CreatedAt,
     DateTime UpdatedAt);
 
-public record GetCommentsQueryResponse(IReadOnlyList<CommentResponse> Comments);
+public record GetCommentsDto(IReadOnlyList<CommentResponse> Comments);
 
 public class GetCommentsHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUserRepository userRepository)
-    : IRequestHandler<GetCommentsQueryRequest, Result<GetCommentsQueryResponse>>
+    : IRequestHandler<GetCommentsQuery, Result<GetCommentsDto>>
 {
-    public async Task<Result<GetCommentsQueryResponse>> Handle(GetCommentsQueryRequest query, CancellationToken cancellationToken = default)
+    public async Task<Result<GetCommentsDto>> Handle(GetCommentsQuery query, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(query.NoteId, cancellationToken);
         if (note is null) return NotFound;
@@ -68,6 +68,6 @@ public class GetCommentsHandler(
                 c.UpdatedAt);
         }).ToList();
 
-        return Success(new GetCommentsQueryResponse(response));
+        return Success(new GetCommentsDto(response));
     }
 }

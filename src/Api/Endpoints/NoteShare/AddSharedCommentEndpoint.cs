@@ -32,7 +32,7 @@ public sealed class AddSharedCommentEndpoint : IGroupedEndpoint<ShareGroup>
 
         var parentId = req.ParentCommentId.HasValue ? new CommentId(req.ParentCommentId.Value) : null;
         var result = await dispatcher.Send(
-            new AddCommentCommandRequest(note.Id, currentUser.Id, req.Content, parentId, token), ct);
+            new AddCommentCommand(note.Id, currentUser.Id, req.Content, parentId, token), ct);
 
         return result.ToNoContent();
     }

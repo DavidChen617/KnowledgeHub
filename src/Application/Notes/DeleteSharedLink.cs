@@ -8,12 +8,12 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record DeleteSharedLinkCommandRequest(NoteId NoteId, UserId UserId) : IRequest<Result>;
+public record DeleteSharedLinkCommand(NoteId NoteId, UserId UserId) : IRequest<Result>;
 
 public class DeleteSharedLinkHandler(INoteRepository noteRepository, IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteSharedLinkCommandRequest, Result>
+    : IRequestHandler<DeleteSharedLinkCommand, Result>
 {
-    public async Task<Result> Handle(DeleteSharedLinkCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(DeleteSharedLinkCommand command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAndUserIdAsync(command.NoteId, command.UserId, cancellationToken);
         if (note is null) return NotFound;

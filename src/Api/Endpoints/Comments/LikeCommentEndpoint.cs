@@ -24,7 +24,7 @@ public sealed class LikeCommentEndpoint : IGroupedEndpoint<CommentsGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new LikeCommentCommandRequest(new CommentId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new LikeCommentCommand(new CommentId(id), currentUser.Id), ct);
 
         return result.ToNoContent();
     }

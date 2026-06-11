@@ -24,7 +24,7 @@ public sealed class DeleteCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new DeleteCategoryCommandRequest(new CategoryId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new DeleteCategoryCommand(new CategoryId(id), currentUser.Id), ct);
 
         return result.ToNoContent();
     }

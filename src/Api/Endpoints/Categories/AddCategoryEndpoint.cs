@@ -11,7 +11,7 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
     public void AddRoute(RouteGroupBuilder group)
     {
         group.MapPost("/", HandleAsync)
-            .Produces<Response<AddCategoryCommandResponse>>(StatusCodes.Status201Created)
+            .Produces<Response<AddCategoryDto>>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized);
     }
@@ -22,8 +22,8 @@ public sealed class AddCategoryEndpoint : IGroupedEndpoint<CategoriesGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new AddCategoryCommandRequest(currentUser.Id, req.Name), ct);
-        return result.ToCreated(v => $"/api/categories/{v.CategoryId}");
+        var result = await dispatcher.Send(new AddCategoryCommand(currentUser.Id, req.Name), ct);
+        return result.ToCreated(v => $"/api/categories/{v.Id}");
     }
 }
 

@@ -23,7 +23,7 @@ public sealed class DeleteSharedLinkEndpoint : IGroupedEndpoint<NotesGroup>
         IDispatcher dispatcher,
         CancellationToken ct)
     {
-        var result = await dispatcher.Send(new DeleteSharedLinkCommandRequest(new NoteId(id), currentUser.Id), ct);
+        var result = await dispatcher.Send(new DeleteSharedLinkCommand(new NoteId(id), currentUser.Id), ct);
         return result.ToNoContent();
     }
 }

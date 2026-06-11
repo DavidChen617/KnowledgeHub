@@ -1,24 +1,25 @@
 # KnowledgeHub
 
-**AI-powered knowledge management — write, structure, and connect your notes with intelligence.**
+**AI 驅動的知識管理系統 — 寫筆記、結構化、連結你的知識。**
 
 ---
 
-KnowledgeHub 是一個以 AI 為核心的筆記系統。你可以用 Markdown 撰寫筆記，一鍵讓 AI 將內容重整為結構化版本，並透過語意向量搜尋快速找到相關知識。知識圖譜讓你直觀看見筆記之間的連結，分享連結讓他人閱讀並留言互動，無需登入。
+KnowledgeHub 是一個以 AI 為核心的筆記系統。用 Markdown 寫筆記，一鍵讓 AI 重整結構，透過語意向量搜尋找到相關知識，並以知識圖譜直觀看見筆記之間的連結。分享連結讓任何人閱讀留言，無需登入。
 
-**主要功能：**
-- Markdown 編輯器（Edit / Split / Preview 三模式，自動存檔）
-- AI 一鍵結構化筆記，支援圖片自動辨識轉文字
-- 語意向量搜尋（pgvector + 多 embedding provider）
-- 知識圖譜視覺化（D3 force-directed）
-- 分享連結 + 公開留言 / 點讚
-- 多 LLM 鏈式降級（Groq / Mistral / Cerebras / OpenRouter / Cloudflare / Pollinations）
+## 主要功能
+
+- **Markdown 編輯器** — Edit / Split / Preview 三模式，自動存檔
+- **AI 結構化** — 一鍵重整筆記，支援圖片自動辨識轉文字，每人每小時限制 5 次
+- **語意搜尋** — pgvector 餘弦相似度搜尋，支援多 embedding provider
+- **知識圖譜** — D3 force-directed 視覺化筆記連結
+- **筆記分享** — 公開分享連結，支援留言與點讚，無需登入
+- **LLM 鏈式降級** — Groq → Mistral → Cerebras → OpenRouter → Cloudflare → Pollinations
 
 ---
 
 ## 線上版本
 
-直接訪問，用 Google 帳號登入即可使用：
+用 Google 帳號登入即可使用：
 
 **[https://davidchen.southeastasia.cloudapp.azure.com/knowledgehub](https://davidchen.southeastasia.cloudapp.azure.com/knowledgehub)**
 
@@ -35,7 +36,7 @@ KnowledgeHub 是一個以 AI 為核心的筆記系統。你可以用 Markdown �
 ### 1. 啟動基礎服務
 
 ```bash
-cp docker/.env.example docker/.env   # 填入必要的環境變數
+cp docker/.env.example docker/.env
 docker compose -f docker/docker-compose.yaml up -d
 ```
 
@@ -52,8 +53,7 @@ dotnet ef database update \
 ### 3. 啟動後端 API
 
 ```bash
-cd src/Api
-dotnet run
+cd src/Api && dotnet run
 ```
 
 API 預設跑在 `http://localhost:5000`。
@@ -62,15 +62,14 @@ API 預設跑在 `http://localhost:5000`。
 
 ```bash
 cd src/Presentation/Web
-pnpm install
-pnpm exec ng serve
+pnpm install && pnpm exec ng serve
 ```
 
 前端預設跑在 `http://localhost:4200`。
 
 ### 環境變數
 
-複製 `infra/k8s/.env` 作為參考，填入以下必要值：
+複製 `infra/k8s/.env` 作為參考：
 
 | 變數 | 說明 |
 |------|------|
@@ -85,41 +84,40 @@ pnpm exec ng serve
 
 ---
 
-## 自架部署（Kubernetes）
+## Clean Architecture (DDD)
 
-本專案使用 Kubernetes 部署於 Azure VM，所有 manifests 位於 `infra/k8s/`。
+![系統架構](images/demo1.png)
 
-```bash
-# 套用所有資源
-kubectl apply -f infra/k8s/postgres/
-kubectl apply -f infra/k8s/redis/
-kubectl apply -f infra/k8s/kafka/
-kubectl apply -f infra/k8s/api/
-kubectl apply -f infra/k8s/web/
-```
+---
 
-> **注意：** Kafka pod 需在 Deployment 的 `spec.template.spec` 加上 `enableServiceLinks: false`，
-> 否則 Kubernetes 注入的 `KAFKA_PORT` 環境變數會導致啟動失敗。
+## Cloud Infrastructure
 
-CI/CD 透過 GitHub Actions 自動部署（`deploy-api.yml` / `deploy-web.yml`）。
+![雲端基礎架構](images/demo2.png)
+
+
+---
+
+## Event-Driven Notifications
+
+![Kafka 流程](images/demo3.png)
+
+> **注意：** Kafka pod 需在 `spec.template.spec` 加上 `enableServiceLinks: false`，否則 Kubernetes 注入的 `KAFKA_PORT` 環境變數會導致啟動失敗。
 
 ---
 
 ## 貢獻指南
 
-歡迎提交 PR，請遵守以下規範：
-
 - **分支**：從 `develop` 開新分支，PR 目標為 `develop`
 - **Commit 格式**：遵守 [Conventional Commits](https://www.conventionalcommits.org/)（`feat` / `fix` / `ci` / `refactor` ...）
 - **後端**：保持 CQRS 結構（Handler / Command / Query 分離）
-- **前端**：使用 Angular standalone component、signal 狀態管理，禁用 `ngClass` / `ngStyle` / `@HostBinding`
+- **前端**：Angular standalone component、signal 狀態管理，禁用 `ngClass` / `ngStyle` / `@HostBinding`
 
 ---
 
 ## Known Issues
 
 - Kafka 首次部署於 Kubernetes 時，需手動確認 `enableServiceLinks: false` 已套用
-- AI 結構化功能依賴外部 LLM provider，若所有 provider 同時不可用則請求失敗
+- AI 結構化依賴外部 LLM provider，若所有 provider 同時不可用則請求失敗
 - 語意搜尋需先對筆記執行一次 AI 結構化，才能建立向量索引
 
 ---

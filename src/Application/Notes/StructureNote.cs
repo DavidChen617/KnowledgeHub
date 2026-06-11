@@ -8,21 +8,21 @@ using static ShareKernal.Result;
 
 namespace Application.Notes;
 
-public record StructureNoteCommandRequest(NoteId NoteId, string Prompt, Guid UserId)
-    : IRequest<Result<StructureNoteCommandResponse>>;
+public record StructureNoteCommand(NoteId NoteId, string Prompt, Guid UserId)
+    : IRequest<Result<StructureNoteDto>>;
 
-public record StructureNoteCommandResponse(Guid StructureId, string Description, string Content);
+public record StructureNoteDto(Guid StructureId, string Description, string Content);
 
-public class StructureNoteHandler(
+public class StructureNoteCommandHandler(
     INoteRepository noteRepository,
     INoteStructurer structurer,
     IEmbedder embedder,
     IImageDescriber imageDescriber,
     IUnitOfWork unitOfWork,
     IStructureRateLimiter rateLimiter)
-    : IRequestHandler<StructureNoteCommandRequest, Result<StructureNoteCommandResponse>>
+    : IRequestHandler<StructureNoteCommand, Result<StructureNoteDto>>
 {
-    public async Task<Result<StructureNoteCommandResponse>> Handle(StructureNoteCommandRequest command,
+    public async Task<Result<StructureNoteDto>> Handle(StructureNoteCommand command,
         CancellationToken cancellationToken = default)
     {
         if (!await rateLimiter.IsAllowedAsync(command.UserId, cancellationToken))
@@ -34,28 +34,32 @@ public class StructureNoteHandler(
             return NotFound;
 
         var preprocessResult = await PreprocessImagesAsync(note.Content, cancellationToken);
-        if (!preprocessResult.IsSuccess) return preprocessResult.Error;
+        if (!preprocessResult.IsSuccess)
+            return preprocessResult.Error;
 
         var structureResult = await structurer.StructureAsync(preprocessResult.Value, command.Prompt, cancellationToken);
-        if (!structureResult.IsSuccess) return structureResult.Error;
+        if (!structureResult.IsSuccess)
+            return structureResult.Error;
 
         var structure = note.AddStructure(command.Prompt, structureResult.Value.StructuredContent, structureResult.Value.Description);
 
         var texts = structure.GetChunks();
         var vectorsResult = await embedder.EmbedBatchAsync(texts, cancellationToken);
-        if (!vectorsResult.IsSuccess) return vectorsResult.Error;
+        if (!vectorsResult.IsSuccess)
+            return vectorsResult.Error;
 
         structure.SetEmbedding(vectorsResult.Value);
 
         await noteRepository.Update(note, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Success(new StructureNoteCommandResponse(structure.Id, structure.Description, structure.Content));
+        return Success(new StructureNoteDto(structure.Id, structure.Description, structure.Content));
     }
 
     private async Task<Result<string>> PreprocessImagesAsync(NoteContent noteContent, CancellationToken ct)
     {
-        if (noteContent.ImageUrls.Count == 0) return noteContent.Value;
+        if (noteContent.ImageUrls.Count == 0)
+            return noteContent.Value;
 
         var text = noteContent.Value;
         foreach (var url in noteContent.ImageUrls)

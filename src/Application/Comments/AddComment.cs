@@ -9,7 +9,7 @@ using static ShareKernal.Result;
 
 namespace Application.Comments;
 
-public record AddCommentCommandRequest(
+public record AddCommentCommand(
     NoteId NoteId,
     UserId UserId,
     string Content,
@@ -20,20 +20,23 @@ public class AddCommentHandler(
     INoteRepository noteRepository,
     ICommentRepository commentRepository,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<AddCommentCommandRequest, Result>
+    : IRequestHandler<AddCommentCommand, Result>
 {
-    public async Task<Result> Handle(AddCommentCommandRequest command, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(AddCommentCommand command, CancellationToken cancellationToken = default)
     {
         var note = await noteRepository.GetByIdAsync(command.NoteId, cancellationToken);
-        if (note is null) return NotFound;
+        if (note is null)
+            return NotFound;
 
         var isOwner = note.UserId == command.UserId;
         var hasShareAccess = command.ShareToken is not null && note.SharedLinkToken == command.ShareToken;
 
-        if (!isOwner && !hasShareAccess) return Forbidden;
+        if (!isOwner && !hasShareAccess)
+            return Forbidden;
 
         var commentResult = Comment.Create(command.NoteId, command.UserId, command.Content, command.ParentCommentId);
-        if (!commentResult.IsSuccess) return commentResult.Error;
+        if (!commentResult.IsSuccess)
+            return commentResult.Error;
 
         await commentRepository.AddAsync(commentResult.Value, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
